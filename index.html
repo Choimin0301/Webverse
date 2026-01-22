@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Webverse: Deck Builder Fixed</title>
+    <style>
+        /* --- 기본 스타일 --- */
+        :root {
+            --bg-color: #1a1a2e;
+            --field-color: rgba(22, 33, 62, 0.9);
+            --hand-color: rgba(15, 52, 96, 0.7);
+            --highlight-color: #e94560;
+            --accent-color: #ffd700;
+            --card-bg: #eaeaea;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at center, #2c3e50 0%, #1a1a2e 100%); color: #eee; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; }
+        
+        /* 덱 빌더 */
+        #deck-builder-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 10000; display: flex; flex-direction: column; }
+        .builder-header { height: 60px; background: #222; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid #444; }
+        .builder-body { flex: 1; display: flex; overflow: hidden; }
+        .card-pool { flex: 1; padding: 20px; overflow-y: auto; border-right: 2px solid #444; }
+        .pool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        
+        /* 내 덱 리스트 스타일 수정 */
+        .my-deck-list { width: 350px; background: #16213e; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .deck-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: #2c3e50; padding: 8px 12px; border-radius: 5px; cursor: pointer; border: 1px solid #444; 
+        }
+        .deck-item:hover { background: #34495e; border-color: #e74c3c; }
+        .deck-item .info { display: flex; align-items: center; gap: 10px; }
+        .deck-item .cost { width: 20px; height: 20px; background: #2980b9; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 12px; }
+        .deck-item .count { background: var(--accent-color); color: #222; font-weight: bold; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+
+        .builder-footer { height: 70px; background: #222; display: flex; align-items: center; justify-content: center; border-top: 2px solid #444; }
+        
+        /* 게임 보드 */
+        #game-container { flex: 1; display: flex; flex-direction: column; padding: 10px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; justify-content: space-between; position: relative; }
+        .hand-area { height: 130px; display: flex; justify-content: center; align-items: center; z-index: 10; }
+        .hand-area.top { align-items: flex-start; } .hand-area.bottom { align-items: flex-end; padding-bottom: 10px; }
+        .battlefield { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px; margin: 5px 0; z-index: 5; }
+        .field-area { height: 160px; background-color: var(--field-color); border: 2px solid rgba(255, 215, 0, 0.1); border-radius: 12px; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 10px; }
+        .hero-row { display: flex; justify-content: center; align-items: center; height: 100px; position: relative; z-index: 400; }
+
+        /* 카드 공통 */
+        .card { width: 100px; height: 140px; background-color: var(--card-bg); color: #333; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; transition: transform 0.2s; border: 3px solid #555; overflow: hidden; flex-shrink: 0; cursor: pointer; }
+        .card:hover { z-index: 1000; }
+        .card.in-hand:hover { transform: translateY(-50px) scale(1.4); }
+        .card.enemy-card-back { background: linear-gradient(135deg, #1c2833, #000); border-color: #555; }
+        
+        .card.ward { border: 3px solid #bdc3c7; }
+        .card.storm { border: 3px solid #3498db; }
+        .card.rush { border: 3px solid #f39c12; }
+        .card.evolved { box-shadow: 0 0 15px #f1c40f; border-color: #f1c40f; }
+        .card.enhance-active .card-cost { background-color: #2ecc71 !important; color: white; border-color: #2ecc71; transform: scale(1.2); }
+
+        .card.playable { box-shadow: 0 0 10px var(--accent-color); }
+        .card.can-attack { box-shadow: 0 0 15px var(--highlight-color); border-color: var(--highlight-color); }
+        .card.exhausted { filter: grayscale(100%) brightness(0.6); cursor: not-allowed; }
+
+        .card-cost { position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; background: #2980b9; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid white; z-index: 2; font-size: 13px;}
+        .card-art { flex: 1; background: #95a5a6; margin: 2px; background-size: cover; background-position: center; }
+        .card-name { text-align: center; font-size: 10px; font-weight: bold; background: rgba(255,255,255,0.9); padding: 1px; white-space: nowrap; overflow: hidden; }
+        .card-desc { font-size: 8px; color: #333; background: #fff; padding: 2px; height: 35px; overflow: hidden; line-height: 1.1; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .card-stats { display: flex; justify-content: space-between; padding: 2px 6px; background: rgba(0,0,0,0.1); font-weight: 900; font-size: 14px; }
+        .stat-atk { color: #d35400; } .stat-hp { color: #c0392b; }
+        .icon-row { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; z-index: 2; }
+        .keyword-icon { width: 16px; height: 16px; background: rgba(0,0,0,0.8); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; border: 1px solid white; }
+
+        .hero { width: 90px; height: 90px; border-radius: 50%; border: 5px solid #555; display: flex; justify-content: center; align-items: center; font-weight: bold; background-size: cover; position: relative; background-color: #333; }
+        .hero.enemy { border-color: #c0392b; } .hero.player { border-color: #3498db; }
+        .hp-badge { position: absolute; bottom: -5px; background: #222; color: white; padding: 2px 10px; border-radius: 10px; font-weight: bold; border: 1px solid white; }
+        .ep-container { position: absolute; right: -30px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .ep-point { width: 14px; height: 14px; border-radius: 50%; background: #444; border: 1px solid #fff; }
+        .ep-point.active { background: radial-gradient(circle, #f1c40f 0%, #d35400 100%); box-shadow: 0 0 5px #f1c40f; }
+
+        #ui-layer { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 500; align-items: center; }
+        .btn { padding: 10px 20px; font-weight: bold; border-radius: 20px; border: none; color: white; cursor: pointer; width: 120px; }
+        .btn:disabled { background: #555 !important; cursor: not-allowed; }
+        #end-turn-btn { background: #27ae60; }
+        #evolve-mode-btn { background: linear-gradient(45deg, #f1c40f, #e67e22); color: #222; }
+        #evolve-mode-btn.active { border: 2px solid white; transform: scale(1.05); }
+
+        #game-log { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 200px; height: 250px; background: rgba(0,0,0,0.7); border-radius: 10px; padding: 10px; overflow-y: auto; color: #ddd; font-size: 12px; pointer-events: none; }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        #overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .choice-container { display: flex; gap: 20px; margin-top: 20px; }
+        .choice-btn { width: 180px; height: 100px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; border: 2px solid white; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-first { background: #3498db; color: white; } .btn-second { background: #e74c3c; color: white; }
+    </style>
+</head>
+<body>
+
+<div id="deck-builder-screen">
+    <div class="builder-header">
+        <h2 style="color:var(--accent-color)">Deck Builder</h2>
+        <div id="deck-count-display" style="font-weight:bold; color:white;">0 / 40</div>
+    </div>
+    <div class="builder-body">
+        <div class="card-pool">
+            <div class="pool-grid" id="pool-grid"></div>
+        </div>
+        <div class="my-deck-list" id="deck-list-container"></div>
+    </div>
+    <div class="builder-footer">
+        <button class="btn" style="background:#27ae60" id="save-deck-btn" onclick="showStartScreen()" disabled>완료</button>
+    </div>
+</div>
+
+<div id="overlay-screen">
+    <h1 style="color:var(--accent-color)">Game Start</h1>
+    <div class="choice-container">
+        <button class="choice-btn btn-first" onclick="startGame(true)">선공 (EP 2)<br><span style="font-size:12px">진화 5턴~</span></button>
+        <button class="choice-btn btn-second" onclick="startGame(false)">후공 (EP 3)<br><span style="font-size:12px">진화 4턴~</span></button>
+    </div>
+</div>
+
+<div id="game-container">
+    <div class="hand-area top" id="enemy-hand"></div>
+    <div class="hero-row">
+        <div id="enemy-hero" class="hero enemy" ondragover="allowDrop(event)" ondrop="handleDropOnEnemyHero(event)">
+            Enemy <div class="hp-badge" id="enemy-hp">20</div>
+            <div class="ep-container" id="enemy-ep"></div>
+        </div>
+    </div>
+    <div class="battlefield">
+        <div class="field-area" id="enemy-field"></div>
+        <div class="field-area" id="player-field" ondragover="allowDropOnField(event)" ondrop="handleDropOnField(event)"></div>
+    </div>
+    <div class="hero-row">
+        <div class="hero player">
+            You <div class="hp-badge" id="player-hp">20</div>
+            <div class="ep-container" id="player-ep"></div>
+        </div>
+    </div>
+    <div class="hand-area bottom" id="player-hand"></div>
+</div>
+
+<div id="ui-layer">
+    <div style="font-size:24px; font-weight:bold; color:var(--accent-color); text-shadow:0 0 5px black;">💎 <span id="mana-display">1/1</span></div>
+    <button id="evolve-mode-btn" class="btn" onclick="toggleEvolveMode()" disabled>⚡ 진화</button>
+    <button id="end-turn-btn" class="btn" onclick="endTurn()" disabled>턴 종료</button>
+</div>
+<div id="game-log"></div>
+
+<script>
+    /* =========================================
+       [데이터 정의] 능력 시스템
+       ========================================= */
+    const cardDatabase = [
+        { id: 1, name: "고블린", cost: 1, atk: 1, hp: 2, art: 'https://via.placeholder.com/100x140/555/fff?text=Goblin', abilities: { desc: "바닐라" } },
+        { id: 2, name: "해골 전사", cost: 2, atk: 1, hp: 1, art: 'https://via.placeholder.com/100x140/333/fff?text=Skeleton', abilities: { desc: "유언: 적 리더 피해 2", lastWords: [{ type: 'damage_leader', value: 2, target: 'enemy' }] } },
+        { id: 3, name: "용감한 기사", cost: 2, atk: 2, hp: 2, art: 'https://via.placeholder.com/100x140/3498db/fff?text=Knight', abilities: { desc: "출격: 드로우 1", fanfare: [{ type: 'draw', value: 1 }] } },
+        { id: 4, name: "방패병", cost: 2, atk: 1, hp: 3, art: 'https://via.placeholder.com/100x140/95a5a6/000?text=Ward', abilities: { desc: "수호", passives: ['ward'] } },
+        { id: 5, name: "암살자", cost: 3, atk: 2, hp: 1, art: 'https://via.placeholder.com/100x140/2c3e50/fff?text=Assassin', abilities: { desc: "질주", passives: ['storm'] } },
+        { id: 6, name: "창술사", cost: 3, atk: 2, hp: 3, art: 'https://via.placeholder.com/100x140/e67e22/fff?text=Lancer', abilities: { desc: "공격시: +1/+0", strike: [{ type: 'buff_self', atk: 1, hp: 0 }] } },
+        { id: 7, name: "검투사", cost: 4, atk: 3, hp: 4, art: 'https://via.placeholder.com/100x140/8e44ad/fff?text=Gladiator', abilities: { desc: "교전시: 적 피해 1", clash: [{ type: 'damage_target', value: 1 }] } },
+        { id: 8, name: "용의 무녀", cost: 2, atk: 2, hp: 2, art: 'https://via.placeholder.com/100x140/16a085/fff?text=Oracle', abilities: { desc: "출격: 증강(5) +2/+2 및 돌진", enhance: { cost: 5, effects: [ { type: 'buff_self', atk: 2, hp: 2 }, { type: 'grant_passive', value: 'rush' }, { type: 'log', text: "증강 발동!" } ] } } },
+        { id: 9, name: "노장군", cost: 4, atk: 3, hp: 4, art: 'https://via.placeholder.com/100x140/c0392b/fff?text=General', abilities: { desc: "진화시: 적 리더 피해 3", evolve: [{ type: 'damage_leader', value: 3, target: 'enemy' }] } },
+        { id: 10, name: "광전사", cost: 3, atk: 3, hp: 2, art: 'https://via.placeholder.com/100x140/d35400/fff?text=Berserk', abilities: { desc: "돌진. 유언: 회복 2", passives: ['rush'], lastWords: [{ type: 'heal_leader', value: 2, target: 'self' }] } }
+    ];
+
+    /* --- 전역 상태 --- */
+    let myDeckData = []; // { id, count, data } 구조로 저장
+    let playerDeck = [];
+    let enemyDeck = [];
+    
+    const player = { hp: 20, mana: 0, maxMana: 0, ep: 0, maxEp: 0, hand: [], field: [], deck: [], id: 'player', isFirst: true, myTurnCount: 0, evolvedThisTurn: false };
+    const enemy = { hp: 20, mana: 0, maxMana: 0, ep: 0, maxEp: 0, hand: [], field: [], deck: [], id: 'enemy', myTurnCount: 0, evolvedThisTurn: false };
+    
+    let isPlayerTurn = false;
+    let draggedItem = null;
+    let isEvolveMode = false;
+
+    /* =========================================
+       [1] 덱 빌더 (수정됨)
+       ========================================= */
+    
+    function initDeckBuilder() {
+        const pool = document.getElementById('pool-grid');
+        cardDatabase.forEach(c => {
+            const el = createCardElement(c, false);
+            el.onclick = () => addToDeck(c);
+            pool.appendChild(el);
+        });
+
+        // [요청 사항] 기본 30장 채우기
+        // 카드가 10종류니까 3장씩 넣으면 딱 30장
+        cardDatabase.forEach(c => {
+            for(let i=0; i<3; i++) addToDeck(c);
+        });
+
+        updateDeckListUI();
+    }
+
+    function addToDeck(card) {
+        // 총 장수 계산
+        const totalCards = myDeckData.reduce((sum, item) => sum + item.count, 0);
+        if (totalCards >= 40) return;
+
+        // 이미 있는지 확인
+        const existing = myDeckData.find(d => d.id === card.id);
+        if (existing) {
+            if (existing.count < 3) existing.count++;
+        } else {
+            myDeckData.push({ id: card.id, count: 1, data: card });
+        }
+        
+        // 코스트 정렬
+        myDeckData.sort((a,b) => a.data.cost - b.data.cost);
+        updateDeckListUI();
+    }
+
+    function removeFromDeck(id) {
+        const existing = myDeckData.find(d => d.id === id);
+        if (existing) {
+            existing.count--;
+            if (existing.count <= 0) {
+                myDeckData = myDeckData.filter(d => d.id !== id);
+            }
+            updateDeckListUI();
+        }
+    }
+
+    function updateDeckListUI() {
+        const list = document.getElementById('deck-list-container');
+        list.innerHTML = '';
+        let total = 0;
+
+        myDeckData.forEach(item => {
+            total += item.count;
+            const div = document.createElement('div');
+            div.className = 'deck-item';
+            div.innerHTML = `
+                <div class="info">
+                    <div class="cost">${item.data.cost}</div>
+                    <span>${item.data.name}</span>
+                </div>
+                <div class="count">x${item.count}</div>
+            `;
+            div.onclick = () => removeFromDeck(item.id);
+            list.appendChild(div);
+        });
+
+        document.getElementById('deck-count-display').innerText = `${total} / 40`;
+        // 20~40장이면 시작 가능
+        document.getElementById('save-deck-btn').disabled = (total < 20); 
+    }
+
+    function showStartScreen() {
+        document.getElementById('deck-builder-screen').style.display = 'none';
+        document.getElementById('overlay-screen').style.display = 'flex';
+    }
+
+    function startGame(isFirst) {
+        document.getElementById('overlay-screen').style.display = 'none';
+        
+        // 덱 생성 (myDeckData -> 실제 카드 배열로 풀기)
+        player.deck = [];
+        myDeckData.forEach(item => {
+            for(let i=0; i<item.count; i++) {
+                player.deck.push(createGameCard(item.data, 'player'));
+            }
+        });
+        shuffle(player.deck);
+
+        // 적 덱 (랜덤)
+        for(let i=0; i<30; i++) {
+            const c = cardDatabase[Math.floor(Math.random() * cardDatabase.length)];
+            enemy.deck.push(createGameCard(c, 'enemy'));
+        }
+        
+        // 드로우
+        for(let i=0; i<3; i++) { draw(player); draw(enemy); }
+
+        player.isFirst = isFirst;
+        if(isFirst) {
+            player.ep = 2; player.maxEp = 2;
+            enemy.ep = 3; enemy.maxEp = 3;
+            enemy.hand.push(enemy.deck.pop()); 
+            log("선공입니다. (EP 2)");
+            startPlayerTurn();
+        } else {
+            player.ep = 3; player.maxEp = 3;
+            enemy.ep = 2; enemy.maxEp = 2;
+            draw(player); 
+            log("후공입니다. (EP 3)");
+            enemyTurnAI();
+        }
+    }
+
+    function createGameCard(data, owner) {
+        return {
+            ...data, 
+            uid: Math.random().toString(36).substr(2, 9),
+            owner: owner,
+            canAttack: false,
+            hasAttacked: false,
+            evolved: false,
+            summonTurn: -1,
+            currentAtk: data.atk,
+            currentHp: data.hp
+        };
+    }
+
+    /* =========================================
+       [2] 게임 로직 (수정: 버튼 활성화)
+       ========================================= */
+
+    function startPlayerTurn() {
+        isPlayerTurn = true;
+        player.myTurnCount++;
+        player.maxMana = Math.min(10, player.myTurnCount);
+        player.mana = player.maxMana;
+        player.evolvedThisTurn = false;
+        
+        player.field.forEach(c => { c.canAttack = true; c.hasAttacked = false; });
+        draw(player);
+        
+        log(`--- ${player.myTurnCount}턴 시작 ---`);
+        
+        // [수정] 턴 시작시 버튼 확실히 활성화
+        document.getElementById('end-turn-btn').disabled = false;
+        updateUI();
+    }
+
+    function endTurn() {
+        if(!isPlayerTurn) return;
+        isPlayerTurn = false;
+        isEvolveMode = false;
+        document.getElementById('evolve-mode-btn').classList.remove('active');
+        document.getElementById('end-turn-btn').disabled = true; // 버튼 비활성화
+        
+        player.field.forEach(c => c.canAttack = false);
+        updateUI();
+        setTimeout(enemyTurnAI, 1000);
+    }
+
+    /* --- 카드 내기, 진화, 전투 (동일) --- */
+    function handleDropOnField(e) {
+        e.preventDefault();
+        if (!isPlayerTurn || !draggedItem || draggedItem.type !== 'hand') return;
+        const index = draggedItem.index;
+        const card = player.hand[index];
+        const abilities = card.abilities || {};
+
+        let costToPay = card.cost;
+        let triggerEnhance = false;
+        if (abilities.enhance && player.mana >= abilities.enhance.cost) {
+            costToPay = abilities.enhance.cost;
+            triggerEnhance = true;
+        }
+
+        if (player.mana >= costToPay && player.field.length < 5) {
+            player.mana -= costToPay;
+            player.hand.splice(index, 1);
+            card.summonTurn = player.myTurnCount;
+            card.canAttack = false;
+            if (abilities.passives?.includes('storm')) card.canAttack = true;
+            if (abilities.passives?.includes('rush')) card.canAttack = true;
+            
+            player.field.push(card);
+            log(`${card.name} 소환!`);
+            
+            if (abilities.fanfare) resolveEffects(abilities.fanfare, card, null);
+            if (triggerEnhance && abilities.enhance.effects) resolveEffects(abilities.enhance.effects, card, null);
+            updateUI();
+        }
+    }
+
+    function toggleEvolveMode() {
+        if (!isPlayerTurn) return;
+        const unlock = player.isFirst ? 5 : 4;
+        if (player.myTurnCount < unlock) { log(`진화는 ${unlock}턴부터 가능합니다.`); return; }
+        if (player.ep <= 0) { log("EP가 부족합니다."); return; }
+        if (player.evolvedThisTurn) { log("한 턴에 한 번만 진화 가능합니다."); return; }
+
+        isEvolveMode = !isEvolveMode;
+        document.getElementById('evolve-mode-btn').classList.toggle('active', isEvolveMode);
+        updateUI();
+    }
+
+    function handleEvolve(cardIndex) {
+        const card = player.field[cardIndex];
+        if (card.evolved) return;
+        player.ep--; player.evolvedThisTurn = true;
+        isEvolveMode = false;
+        document.getElementById('evolve-mode-btn').classList.remove('active');
+        
+        card.evolved = true; card.currentAtk += 2; card.currentHp += 2;
+        if (!card.hasAttacked) card.canAttack = true;
+        log(`⚡ ${card.name} 진화!`);
+        if (card.abilities?.evolve) resolveEffects(card.abilities.evolve, card, null);
+        updateUI();
+    }
+
+    function handleCombat(attacker, defenderIndex, isLeader) {
+        if (!attacker.canAttack) return;
+        const isSummonTurn = attacker.summonTurn === player.myTurnCount;
+        const hasStorm = attacker.abilities.passives?.includes('storm');
+        if (isLeader && isSummonTurn && !hasStorm) { log("돌진 하수인은 리더 공격 불가"); return; }
+        
+        const defender = isLeader ? enemy : enemy.field[defenderIndex];
+        
+        // 수호 체크
+        const hasWard = enemy.field.some(c => c.abilities.passives?.includes('ward'));
+        if (isLeader && hasWard) { log("수호 하수인이 막고 있습니다."); return; }
+        if (!isLeader && hasWard && !defender.abilities.passives?.includes('ward')) { log("수호 하수인을 먼저 공격하세요."); return; }
+
+        attacker.hasAttacked = true;
+        attacker.canAttack = false;
+
+        if (attacker.abilities?.strike) resolveEffects(attacker.abilities.strike, attacker, isLeader ? 'leader' : defender);
+        if (!isLeader) {
+            if (attacker.abilities?.clash) resolveEffects(attacker.abilities.clash, attacker, defender);
+            if (defender.abilities?.clash) resolveEffects(defender.abilities.clash, defender, attacker);
+        }
+
+        if (attacker.currentHp <= 0 || (!isLeader && defender.currentHp <= 0) || (isLeader && defender.hp <= 0)) {
+            resolveDeaths(); updateUI(); return;
+        }
+
+        if (isLeader) { defender.hp -= attacker.currentAtk; }
+        else { defender.currentHp -= attacker.currentAtk; attacker.currentHp -= defender.currentAtk; }
+        
+        log(`⚔️ 전투: ${attacker.name} vs ${isLeader ? '리더' : defender.name}`);
+        resolveDeaths(); updateUI();
+    }
+
+    function resolveDeaths() {
+        const clean = (list) => {
+            for (let i = list.length - 1; i >= 0; i--) {
+                if (list[i].currentHp <= 0) {
+                    const c = list[i]; list.splice(i, 1);
+                    if (c.abilities?.lastWords) resolveEffects(c.abilities.lastWords, c, null);
+                }
+            }
+        };
+        clean(player.field); clean(enemy.field);
+        checkWin();
+    }
+
+    function resolveEffects(list, source, target) {
+        list.forEach(ef => {
+            switch(ef.type) {
+                case 'damage_leader': (ef.target === 'enemy' ? enemy : player).hp -= ef.value; break;
+                case 'damage_target': if(target?.currentHp) target.currentHp -= ef.value; break;
+                case 'draw': draw(player); break;
+                case 'buff_self': source.currentAtk += ef.atk; source.currentHp += ef.hp; break;
+                case 'heal_leader': (ef.target === 'self' ? player : enemy).hp += ef.value; break;
+                case 'grant_passive': if(!source.abilities.passives) source.abilities.passives=[]; source.abilities.passives.push(ef.value); if(ef.value==='rush'||ef.value==='storm') source.canAttack=true; break;
+                case 'log': log(ef.text); break;
+            }
+        });
+        checkWin();
+    }
+
+    function enemyTurnAI() {
+        if(enemy.hp <= 0) return;
+        enemy.myTurnCount++; enemy.maxMana = Math.min(10, enemy.myTurnCount); enemy.mana = enemy.maxMana; enemy.evolvedThisTurn = false;
+        enemy.field.forEach(c => c.canAttack = true); draw(enemy);
+        
+        enemy.hand.sort((a,b) => b.cost - a.cost);
+        for(let i=enemy.hand.length-1; i>=0; i--) {
+            const c = enemy.hand[i];
+            let cost = c.cost; if(c.abilities?.enhance && enemy.mana >= c.abilities.enhance.cost) cost = c.abilities.enhance.cost;
+            if(enemy.mana >= cost && enemy.field.length < 5) {
+                enemy.mana -= cost; enemy.hand.splice(i,1); c.currentAtk = c.atk; c.currentHp = c.hp; c.summonTurn = enemy.myTurnCount;
+                enemy.field.push(c); log(`🔴 적 소환: ${c.name}`);
+                if(cost > c.cost && c.abilities.enhance) resolveEffects(c.abilities.enhance.effects, c, null);
+                else if(c.abilities.fanfare) resolveEffects(c.abilities.fanfare, c, null);
+            }
+        }
+        
+        const unlock = player.isFirst ? 4 : 5;
+        if(enemy.myTurnCount >= unlock && enemy.ep > 0 && enemy.field.length > 0) {
+            const t = enemy.field.find(c => !c.evolved);
+            if(t) { enemy.ep--; t.evolved = true; t.currentAtk += 2; t.currentHp += 2; t.canAttack = true; log(`⚡ 적 진화: ${t.name}`); }
+        }
+        updateUI();
+        
+        setTimeout(() => {
+            const playerWard = player.field.some(c => c.abilities.passives?.includes('ward'));
+            enemy.field.forEach(at => {
+                if(!at.canAttack) return;
+                if(at.currentAtk >= player.hp && !playerWard) { player.hp -= at.currentAtk; return; }
+                if(playerWard) {
+                    const ti = player.field.findIndex(c => c.abilities.passives?.includes('ward'));
+                    if(ti !== -1) { player.field[ti].currentHp -= at.currentAtk; at.currentHp -= player.field[ti].currentAtk; }
+                } else { player.hp -= at.currentAtk; }
+            });
+            resolveDeaths(); updateUI(); startPlayerTurn();
+        }, 1500);
+    }
+
+    function draw(t) { if(t.deck.length && t.hand.length < 9) t.hand.push(t.deck.pop()); }
+    function shuffle(a) { a.sort(() => Math.random() - 0.5); }
+    function checkWin() { if(player.hp<=0) { alert("패배"); location.reload(); } if(enemy.hp<=0) { alert("승리"); location.reload(); } }
+    function log(t) { const d=document.createElement('div'); d.className='log-entry'; d.innerText=t; document.getElementById('game-log').prepend(d); }
+
+    function handleDragStart(e, type, index) {
+        if (!isPlayerTurn) return;
+        draggedItem = { type, index };
+        e.dataTransfer.setData('text/plain', index);
+        e.dataTransfer.effectAllowed = 'move';
+    }
+    function allowDrop(e) { e.preventDefault(); }
+    function allowDropOnField(e) { e.preventDefault(); }
+    function handleDropOnEnemyHero(e) { e.preventDefault(); if(draggedItem.type === 'field') handleCombat(player.field[draggedItem.index], null, true); }
+
+    function updateUI() {
+        document.getElementById('player-hp').innerText = player.hp;
+        document.getElementById('enemy-hp').innerText = enemy.hp;
+        document.getElementById('mana-display').innerText = `${player.mana}/${player.maxMana}`;
+        renderEp(player.ep, player.maxEp, 'player-ep'); renderEp(enemy.ep, enemy.maxEp, 'enemy-ep');
+        
+        // [중요] 턴 종료 버튼 상태 관리 (내 턴이면 활성, 아니면 비활성)
+        const endBtn = document.getElementById('end-turn-btn');
+        endBtn.disabled = !isPlayerTurn;
+
+        const evBtn = document.getElementById('evolve-mode-btn');
+        const unlock = player.isFirst ? 5 : 4;
+        if(isPlayerTurn && player.myTurnCount >= unlock && player.ep > 0 && !player.evolvedThisTurn) evBtn.disabled = false; else evBtn.disabled = true;
+
+        renderField(player.field, 'player-field', true); renderField(enemy.field, 'enemy-field', false);
+        renderHand(player.hand, 'player-hand', true); renderHand(enemy.hand, 'enemy-hand', false);
+    }
+    function renderEp(c, m, id) { const p = document.getElementById(id); p.innerHTML = ''; for(let i=0; i<m; i++) { const d=document.createElement('div'); d.className=i<c?'ep-point active':'ep-point'; p.appendChild(d); } }
+    
+    function createCardElement(data, isGame) {
+        const el = document.createElement('div'); el.className = 'card';
+        let icons = '';
+        if(data.abilities) {
+            if(data.abilities.passives?.includes('ward')) { el.classList.add('ward'); icons+='🛡️'; }
+            if(data.abilities.passives?.includes('storm')) { el.classList.add('storm'); icons+='⚡'; }
+            if(data.abilities.passives?.includes('rush')) { el.classList.add('rush'); icons+='👟'; }
+            if(data.abilities.lastWords) { el.classList.add('lastwords'); icons+='💀'; }
+        }
+        let cost=data.cost, atk=data.atk, hp=data.hp;
+        if(isGame) {
+            atk = data.currentAtk; hp = data.currentHp;
+            if(data.evolved) el.classList.add('evolved');
+            if(data.owner==='player' && !data.summonTurn && data.abilities?.enhance && player.mana>=data.abilities.enhance.cost) {
+                el.classList.add('enhance-active'); cost = data.abilities.enhance.cost;
+            }
+        }
+        el.innerHTML = `<div class="card-cost">${cost}</div><div class="icon-row">${icons}</div><div class="card-art" style="background-image: url('${data.art}')"></div><div class="card-name">${data.name}</div><div class="card-desc">${data.abilities?.desc||''}</div><div class="card-stats"><span class="stat-atk">⚔️${atk}</span><span class="stat-hp">🩸${hp}</span></div>`;
+        return el;
+    }
+    function renderHand(l, id, isP) {
+        const c = document.getElementById(id); c.innerHTML = '';
+        l.forEach((card, i) => {
+            const el = createCardElement(card, true); el.classList.add('in-hand');
+            if(isP) {
+                el.draggable = true; el.ondragstart = (e) => handleDragStart(e, 'hand', i);
+                let cost = card.cost;
+                if(card.abilities?.enhance && player.mana >= card.abilities.enhance.cost) cost = card.abilities.enhance.cost;
+                if(player.mana >= cost && isPlayerTurn) el.classList.add('playable');
+            } else { el.classList.add('enemy-card-back'); el.innerHTML = ''; }
+            c.appendChild(el);
+        });
+    }
+    function renderField(l, id, isP) {
+        const c = document.getElementById(id); c.innerHTML = '';
+        l.forEach((card, i) => {
+            const el = createCardElement(card, true);
+            if(isP) {
+                if(isEvolveMode && !card.evolved) { el.classList.add('selectable-target'); el.onclick = () => handleEvolve(i); }
+                else if(card.canAttack && isPlayerTurn && !isEvolveMode) { el.classList.add('can-attack'); el.draggable = true; el.ondragstart = (e) => handleDragStart(e, 'field', i); }
+                else el.classList.add('exhausted');
+            } else {
+                el.classList.add('enemy-minion');
+                el.ondragover = (e) => e.preventDefault();
+                el.ondrop = (e) => { e.preventDefault(); if(draggedItem.type==='field') handleCombat(player.field[draggedItem.index], i, false); }
+            }
+            c.appendChild(el);
+        });
+    }
+
+    initDeckBuilder();
+</script>
+</body>
+</html>
