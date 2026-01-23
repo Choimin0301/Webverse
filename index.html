@@ -2,197 +2,255 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Webverse: Perfect Deck Builder</title>
+    <title>Webverse: Final UI Restoration</title>
     <style>
-        /* --- 공통 변수 --- */
+        /* --- 1. 글로벌 테마 --- */
         :root {
-            --bg-dark: #121212;
-            --bg-panel: #1e1e24;
-            --accent: #f1c40f;
-            --text-main: #ecf0f1;
-            --border: #333;
+            --bg-dark: #0b0c10;
+            --panel-bg: #1f2833;
+            --accent-gold: #f1c40f;
+            --accent-green: #2ecc71;
+            --text-main: #c5c6c7;
             --card-width: 110px;
             --card-height: 150px;
         }
+        
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%); 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg-dark); 
             color: var(--text-main); 
-            margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; 
+            margin: 0; height: 100vh; 
+            display: flex; flex-direction: column; 
+            overflow: hidden; user-select: none; 
         }
 
-        /* --- 1. 덱 빌더 레이아웃 (수정됨) --- */
+        /* --- 2. 덱 빌더 UI (이미지 스타일 복구) --- */
         #deck-builder-screen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-dark); z-index: 10000; display: flex; flex-direction: column; 
+            background: #151515; z-index: 10000; 
+            display: flex; flex-direction: column; 
         }
 
-        /* 헤더 */
         .builder-header { 
-            height: 60px; background: #202020; border-bottom: 2px solid var(--accent); 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 10;
+            height: 60px; background: #222; 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 40px; border-bottom: 2px solid var(--accent-gold);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .builder-header h2 { margin: 0; color: var(--accent); font-size: 24px; letter-spacing: 1px; }
-        .deck-counter { font-size: 18px; font-weight: bold; color: #fff; background: #333; padding: 5px 15px; border-radius: 20px; }
-
-        /* 바디: 좌측(카드풀) / 우측(덱리스트) */
-        .builder-body { 
-            flex: 1; display: flex; overflow: hidden; position: relative; 
+        .builder-header h2 { margin: 0; color: var(--accent-gold); font-size: 24px; letter-spacing: 1px; }
+        .deck-counter-badge {
+            background: #333; padding: 6px 20px; border-radius: 20px;
+            font-weight: bold; font-size: 18px; color: white; border: 1px solid #555;
         }
 
-        /* [수정] 카드 풀 영역 (스크롤 가능) */
-        .card-pool-container {
-            flex: 1; 
-            padding: 30px; 
-            overflow-y: auto; 
+        .builder-body { flex: 1; display: flex; overflow: hidden; position: relative; }
+        
+        /* 좌측: 카드 풀 (그리드) */
+        .card-pool { 
+            flex: 1; padding: 40px; overflow-y: auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 25px; align-content: start;
             background: #1a1a1a;
         }
 
-        /* [수정] 그리드 시스템 (반응형) */
-        .pool-grid { 
-            display: grid; 
-            /* 화면 너비에 따라 카드 자동 배치 (최소 너비 120px) */
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-            gap: 20px; 
-            width: 100%;
-        }
-
-        /* 우측 덱 리스트 패널 */
+        /* 우측: 덱 리스트 (사이드바) */
         .my-deck-panel { 
-            width: 320px; 
-            background: #151515; 
-            border-left: 1px solid #444; 
-            display: flex; flex-direction: column; 
+            width: 340px; background: #10151b; 
+            border-left: 1px solid #333; 
+            display: flex; flex-direction: column;
             box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-            z-index: 5;
         }
         .deck-list-scroll {
-            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px;
+            flex: 1; padding: 15px; overflow-y: auto; 
+            display: flex; flex-direction: column; gap: 8px;
         }
 
-        /* 덱 리스트 아이템 (바 형태) */
+        /* 덱 리스트 아이템 (파란색 바 스타일 복구) */
         .deck-item {
             display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(90deg, #2c3e50, #34495e);
-            padding: 10px 15px; border-radius: 6px; cursor: pointer;
-            border: 1px solid #444; transition: all 0.2s; position: relative; overflow: hidden;
+            background: linear-gradient(90deg, #1c2e3f, #2b455f);
+            border: 1px solid #3d5a75; 
+            border-radius: 6px;
+            padding: 8px 12px; cursor: pointer; 
+            transition: all 0.1s; position: relative;
         }
-        .deck-item:hover { transform: translateX(-5px); border-color: var(--accent); }
-        .deck-item::before { /* 코스트 배경바 */
-            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 40px; 
-            background: rgba(0,0,0,0.2); z-index: 0;
+        .deck-item:hover { filter: brightness(1.2); border-color: #64b5f6; transform: translateX(-5px); }
+        
+        .deck-item-left { display: flex; align-items: center; gap: 12px; }
+        .list-cost {
+            width: 24px; height: 24px; background: #2980b9; 
+            color: white; border-radius: 50%; border: 2px solid #8ecafc;
+            display: flex; justify-content: center; align-items: center; 
+            font-weight: bold; font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-        .item-cost { 
-            width: 24px; height: 24px; background: #2980b9; color: white; border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; 
-            z-index: 1; border: 2px solid #8ecafc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .item-name { flex: 1; margin-left: 15px; font-weight: bold; font-size: 14px; z-index: 1; text-shadow: 1px 1px 2px black; }
-        .item-count { font-size: 14px; font-weight: bold; color: var(--accent); z-index: 1; }
+        .list-name { font-size: 14px; font-weight: bold; color: #ecf0f1; text-shadow: 1px 1px 2px black; }
+        .list-count { color: var(--accent-gold); font-weight: bold; font-size: 14px; }
 
-        /* 푸터 */
         .builder-footer { 
-            height: 70px; background: #202020; border-top: 1px solid #333; 
-            display: flex; align-items: center; justify-content: center; z-index: 10;
+            height: 80px; background: #1a1a1a; 
+            display: flex; align-items: center; justify-content: center; 
+            border-top: 1px solid #333;
         }
+        .start-btn {
+            padding: 14px 60px; font-size: 20px; font-weight: bold;
+            background: #27ae60; color: white; border: none; border-radius: 30px;
+            cursor: pointer; box-shadow: 0 4px 0 #1e8449; transition: transform 0.1s;
+        }
+        .start-btn:active { transform: translateY(4px); box-shadow: none; }
+        .start-btn:disabled { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.5; }
 
-        /* --- 2. 카드 디자인 (UI 개선) --- */
+
+        /* --- 3. 카드 디자인 (섀도우버스 스타일 복구) --- */
         .card { 
             width: var(--card-width); height: var(--card-height); 
-            background: #f0f0f0; color: #333; 
+            background: #2c3e50; /* 어두운 배경 */
+            color: #333; 
             border-radius: 8px; position: relative; 
             display: flex; flex-direction: column; cursor: pointer; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.6); 
-            border: 3px solid #777; 
-            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5); 
+            border: 2px solid #777; 
+            transition: transform 0.1s; flex-shrink: 0;
             overflow: hidden;
         }
-        .card:hover { transform: scale(1.1); z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.8); border-color: #fff; }
-        
-        .card-top { flex: 3; position: relative; background: #333; }
-        .card-art { width: 100%; height: 100%; background-size: cover; background-position: center; }
-        
-        .card-bottom { flex: 2; background: #fff; padding: 2px; display: flex; flex-direction: column; justify-content: space-between; border-top: 2px solid #d4af37; }
-        .card-name { font-size: 11px; font-weight: 800; text-align: center; background: #eee; padding: 2px 0; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-desc { font-size: 9px; line-height: 1.2; text-align: center; color: #444; padding: 0 2px; height: 32px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        
+        .card:hover { transform: scale(1.1); z-index: 500; border-color: #fff; }
+        .card.in-hand:hover { transform: translateY(-60px) scale(1.4); z-index: 1000; }
+
+        /* 카드 내부 레이아웃 */
+        .card-art { 
+            flex: 1.4; background: #555; background-size: cover; background-position: center; 
+            border-bottom: 2px solid #d4af37; /* 금색 라인 */
+        }
+        .card-mid { 
+            background: #fff; padding: 2px 0; text-align: center; 
+            border-bottom: 1px solid #ccc; height: 20px; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .card-name { font-size: 11px; font-weight: 800; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+        .card-bottom { 
+            flex: 1; background: #eee; padding: 4px; 
+            position: relative; display: flex; align-items: center; justify-content: center; 
+        }
+        .card-desc { font-size: 9px; line-height: 1.2; text-align: center; color: #333; height: 100%; overflow: hidden; }
+
+        /* 코스트 (카드 안쪽) */
         .card-cost { 
-            position: absolute; top: -4px; left: -4px; width: 28px; height: 28px; 
+            position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; 
             background: radial-gradient(circle, #3498db, #2980b9); color: white; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-weight: 900; font-size: 16px; border: 2px solid white; z-index: 5; box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+            font-weight: 900; font-size: 14px; border: 2px solid white; z-index: 10; 
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
         }
-        .enhance-active .card-cost { background: radial-gradient(circle, #2ecc71, #27ae60); transform: scale(1.1); }
+        .enhance-active .card-cost { background: radial-gradient(circle, #2ecc71, #27ae60) !important; transform: scale(1.1); }
 
-        .stat-box { 
-            position: absolute; bottom: 0; width: 34px; height: 30px; 
-            display: flex; justify-content: center; align-items: center; 
-            font-size: 16px; font-weight: 900; color: white; z-index: 5; text-shadow: 1px 1px 0 #000;
+        /* 스탯 박스 */
+        .stat-box {
+            position: absolute; bottom: 0; width: 30px; height: 26px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 14px; font-weight: 900; color: white; z-index: 10; 
+            text-shadow: 1px 1px 0 #000;
         }
-        .stat-atk { left: 0; background: linear-gradient(45deg, #e67e22, #d35400); clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%); padding-right: 5px; border-top-right-radius: 10px; }
-        .stat-hp { right: 0; background: linear-gradient(45deg, #c0392b, #e74c3c); clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%); padding-left: 5px; border-top-left-radius: 10px; }
+        .stat-atk { left: 0; background: linear-gradient(45deg, #e67e22, #d35400); border-top-right-radius: 8px; }
+        .stat-hp { right: 0; background: linear-gradient(45deg, #c0392b, #e74c3c); border-top-left-radius: 8px; }
 
-        .icon-row { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; z-index: 6; flex-wrap: wrap; justify-content: flex-end; width: 80px; pointer-events: none; }
-        .keyword-icon { width: 18px; height: 18px; background: rgba(0,0,0,0.8); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; border: 1px solid white; box-shadow: 1px 1px 3px black; }
+        .icon-row { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; z-index: 5; flex-wrap: wrap; justify-content: flex-end; width: 60px; pointer-events: none; }
+        .keyword-icon { width: 16px; height: 16px; background: rgba(0,0,0,0.8); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; border: 1px solid white; box-shadow: 1px 1px 2px black;}
 
-        /* 카드 상태 테두리 */
-        .card.ward { border-color: #bdc3c7; box-shadow: 0 0 5px #bdc3c7; }
-        .card.storm { border-color: #3498db; box-shadow: 0 0 5px #3498db; }
-        .card.rush { border-color: #f39c12; box-shadow: 0 0 5px #f39c12; }
-        .card.bane { border-bottom-color: #8e44ad; border-bottom-width: 5px; }
-        .card.ambush { opacity: 0.8; filter: grayscale(0.5); }
-        .card.evolved { border-color: #f1c40f; box-shadow: 0 0 20px #f1c40f !important; }
-        .card.evolved .card-art { filter: sepia(0.4) contrast(1.2); }
-        .card.playable { box-shadow: 0 0 15px #2ecc71; border-color: #2ecc71; }
-        .card.can-attack { cursor: crosshair; box-shadow: 0 0 15px #e74c3c; border-color: #e74c3c; }
+        /* 특수 효과 테두리 */
+        .card.ward { border-color: #bdc3c7; box-shadow: 0 0 8px #bdc3c7; }
+        .card.storm { border-color: #3498db; box-shadow: 0 0 8px #3498db; }
+        .card.rush { border-color: #f39c12; box-shadow: 0 0 8px #f39c12; }
+        .card.bane { border-bottom: 5px solid #8e44ad; }
+        .card.ambush { opacity: 0.8; border: 2px dashed #7f8c8d; }
+        .card.evolved { border-color: #f1c40f; box-shadow: 0 0 15px #f1c40f !important; }
+        .card.evolved .card-art { filter: sepia(0.3) contrast(1.2); }
+        .card.playable { box-shadow: 0 0 12px #2ecc71; border-color: #2ecc71; }
+        .card.can-attack { cursor: crosshair; box-shadow: 0 0 12px #e74c3c; border-color: #e74c3c; }
         .card.exhausted { filter: grayscale(1); cursor: default; }
-        .card.enemy-card-back { background: linear-gradient(135deg, #2c3e50, #000); border: 2px solid #555; }
+        .card.enemy-card-back { background: linear-gradient(135deg, #1c2833, #2c3e50); border: 2px solid #555; }
 
-        /* --- 3. 게임 보드 레이아웃 --- */
-        #game-board { flex: 1; display: flex; flex-direction: column; padding: 10px; max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        .zone { display: flex; justify-content: center; align-items: center; position: relative; }
-        .hand-zone { height: 160px; z-index: 100; gap: -30px; }
-        .hero-zone { height: 110px; z-index: 50; }
-        .field-zone { 
-            flex: 1; margin: 5px 0; background: rgba(0,0,0,0.3); border-radius: 15px; 
-            border: 2px solid #444; display: flex; justify-content: center; align-items: center; 
-            gap: 15px; padding: 10px; transition: background 0.2s; 
-        }
-        .field-zone.drag-hover { background: rgba(46, 204, 113, 0.15); border-color: #2ecc71; box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
-
-        .hero { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #555; display: flex; justify-content: center; align-items: center; font-weight: bold; background: #333; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 10; }
-        .hero.player { border-color: #3498db; } .hero.enemy { border-color: #c0392b; }
-        .hero.valid-target { box-shadow: 0 0 30px #e74c3c; border-color: #e74c3c; cursor: crosshair; transform: scale(1.1); }
-        .hp-badge { position: absolute; bottom: -12px; background: #222; padding: 4px 16px; border-radius: 15px; border: 2px solid #fff; font-size: 20px; font-weight: bold; color:white;}
+        /* --- [핵심] 덱 빌더 상태 표시 (수정됨) --- */
         
-        .ep-orbs { position: absolute; right: -40px; top: 15px; display: flex; flex-direction: column; gap: 6px; }
-        .orb { width: 18px; height: 18px; background: #333; border-radius: 50%; border: 2px solid #666; box-shadow: inset 0 0 5px #000; }
-        .orb.on { background: radial-gradient(circle at 30% 30%, #ffd700, #f39c12); border-color: #fff; box-shadow: 0 0 10px #f1c40f; }
+        /* 1. 수량 배지: 최상단 z-index */
+        .pool-count-badge {
+            position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            background: #27ae60; color: white; border: 2px solid #1e8449;
+            padding: 1px 10px; border-radius: 12px; font-size: 11px; font-weight: 900;
+            z-index: 100; /* 오버레이보다 높음 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+            white-space: nowrap; pointer-events: none;
+        }
 
-        /* UI Controls */
-        #controls { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 2000; }
-        .mana-display { font-size: 28px; font-weight: bold; color: var(--accent); text-shadow: 0 0 5px black; }
-        .btn { width: 140px; padding: 12px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-size: 16px; transition: transform 0.1s; }
-        .btn:active { transform: translateY(2px); }
-        .btn:disabled { background: #555 !important; cursor: not-allowed; opacity: 0.5; box-shadow: none; }
-        #end-turn { background: linear-gradient(to bottom, #2ecc71, #27ae60); } 
-        #evolve { background: linear-gradient(to bottom, #f1c40f, #f39c12); color: #222; }
-        #evolve.active { border: 3px solid white; transform: scale(1.1); box-shadow: 0 0 20px #f1c40f; }
-        #save-deck-btn { background: #27ae60; font-size: 20px; width: 200px; }
+        /* 2. 최대 장수 도달 시 카드 처리 */
+        .card.maxed-out {
+            cursor: not-allowed !important;
+            border-color: #444;
+        }
+        
+        /* 3. 어두운 오버레이 (카드 내용물만 가림) */
+        .card.maxed-out::after {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* 85% 투명 블랙 */
+            z-index: 20; /* 배지(100)보다 낮음 */
+            border-radius: 6px;
+        }
 
-        #log-window { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 220px; height: 250px; background: rgba(0,0,0,0.8); border: 1px solid #444; border-radius: 8px; overflow-y: auto; color: #ccc; font-size: 11px; padding: 10px; pointer-events: none; z-index: 100; }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+        /* 4. 안내 문구 (오버레이 위에 선명하게 표시) */
+        .max-overlay-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-weight: bold; font-size: 11px; text-align: center;
+            width: 95%; z-index: 50; /* 오버레이(20)보다 높음 */
+            text-shadow: 0 0 5px #000; line-height: 1.4; 
+            pointer-events: none; white-space: pre-wrap;
+        }
 
-        /* 오버레이 */
+
+        /* --- 게임 보드 UI --- */
+        #game-board { flex: 1; display: flex; padding: 0; background: #0b0c10; position: relative; }
+
+        .sidebar-left { width: 220px; background: rgba(0,0,0,0.3); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
+        #game-log { flex: 1; overflow-y: auto; font-size: 12px; color: #aaa; padding-right: 5px; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; }
+
+        .main-play-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; padding: 20px 40px; }
+        
+        .battle-zone-container { flex: 1; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; display: flex; flex-direction: column; margin: 10px 0; position: relative; }
+        .battle-divider { height: 1px; background: rgba(255,255,255,0.15); width: 100%; position: absolute; top: 50%; left: 0; }
+
+        .field-row { flex: 1; display: flex; justify-content: center; align-items: center; gap: 15px; padding: 10px; z-index: 2; min-height: 160px; }
+        .field-row.drag-hover { background: rgba(46, 204, 113, 0.05); box-shadow: inset 0 0 20px rgba(46, 204, 113, 0.2); }
+
+        .hand-row { height: 140px; display: flex; justify-content: center; align-items: center; gap: -20px; z-index: 10; }
+
+        .hero-spot { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; }
+        .hero-spot.enemy { top: -50px; } .hero-spot.player { bottom: -50px; }
+
+        .hero-avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #444; background: #333; display: flex; justify-content: center; align-items: center; font-weight: bold; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
+        .hero-avatar.player { border-color: #3498db; } .hero-avatar.enemy { border-color: #c0392b; }
+        .hero-avatar.valid-target { border-color: #e74c3c; box-shadow: 0 0 30px #e74c3c; cursor: crosshair; transform: scale(1.1); }
+
+        .hp-pill { margin-top: -10px; background: #222; border: 2px solid #fff; padding: 2px 12px; border-radius: 12px; font-weight: bold; font-size: 16px; color: white; z-index: 6; }
+        .ep-dots { position: absolute; right: -25px; top: 20px; display: flex; flex-direction: column; gap: 6px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; background: #333; border: 1px solid #666; }
+        .dot.on { background: radial-gradient(circle, #f1c40f, #e67e22); border-color: #fff; box-shadow: 0 0 8px #f1c40f; }
+
+        .sidebar-right { width: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; padding: 10px; }
+        .mana-gem { font-size: 24px; font-weight: bold; color: var(--accent-gold); display: flex; align-items: center; gap: 5px; text-shadow: 0 0 5px black; }
+        
+        .action-btn { width: 100%; padding: 15px 0; border-radius: 25px; border: none; font-weight: 900; font-size: 16px; color: white; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); transition: transform 0.1s; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
+        .action-btn:active { transform: translateY(3px); box-shadow: none; }
+        .action-btn:disabled { background: #444 !important; color: #888; cursor: not-allowed; box-shadow: none; }
+        #btn-evolve { background: linear-gradient(to right, #f1c40f, #e67e22); color: #222; }
+        #btn-evolve.active { border: 3px solid white; box-shadow: 0 0 20px #f1c40f; transform: scale(1.05); }
+        #btn-end { background: linear-gradient(to right, #2ecc71, #27ae60); }
+
         #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .choice-btn { width: 220px; height: 140px; margin: 15px; border-radius: 15px; font-size: 22px; font-weight: bold; cursor: pointer; border: 3px solid #555; transition: transform 0.2s; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
         .choice-btn:hover { transform: scale(1.05); border-color: white; }
 
         .dragging { opacity: 0.4; }
-        .valid-target { box-shadow: 0 0 30px #e74c3c !important; border-color: #e74c3c !important; transform: scale(1.05); z-index: 1000 !important; cursor: crosshair; }
-        .selectable-target { border-color: #2ecc71 !important; box-shadow: 0 0 20px #2ecc71 !important; cursor: pointer !important; animation: pulse 1s infinite; z-index: 2000 !important; }
-        @keyframes pulse { 0% { transform: scale(1.0); } 50% { transform: scale(1.05); } 100% { transform: scale(1.0); } }
     </style>
 </head>
 <body>
@@ -200,23 +258,21 @@
 <div id="deck-builder-screen">
     <div class="builder-header">
         <h2>Deck Builder</h2>
-        <div class="deck-counter" id="deck-count-display">0 / 40</div>
+        <div class="deck-counter-badge" id="deck-count-display">0 / 40</div>
     </div>
     <div class="builder-body">
-        <div class="card-pool-container">
-            <div class="pool-grid" id="builder-pool"></div>
-        </div>
+        <div class="card-pool" id="builder-pool"></div>
         <div class="my-deck-panel">
             <div class="deck-list-scroll" id="builder-list"></div>
         </div>
     </div>
     <div class="builder-footer">
-        <button class="btn" id="save-deck-btn" disabled onclick="toStartScreen()">완료</button>
+        <button class="start-btn" id="btn-finish-deck" disabled onclick="toStartScreen()">완료</button>
     </div>
 </div>
 
 <div id="start-overlay">
-    <h1 style="color:var(--accent); font-size: 40px; margin-bottom: 40px;">Game Start</h1>
+    <h1 style="color:var(--accent-gold); font-size: 40px; margin-bottom: 40px;">Game Start</h1>
     <div style="display:flex; gap:30px;">
         <button class="choice-btn" style="background:linear-gradient(135deg, #2980b9, #2c3e50);" onclick="startGame(true)">
             선공 (First)
@@ -229,47 +285,58 @@
     </div>
 </div>
 
-<div id="game-board">
-    <div class="zone hand-zone" id="enemy-hand"></div>
-    <div class="zone hero-zone">
-        <div id="enemy-hero" class="hero enemy">
-            Enemy <div class="hp-badge" id="e-hp">20</div>
-            <div class="ep-orbs" id="e-ep"></div>
-        </div>
+<div id="game-board" style="display:flex;">
+    <div class="sidebar-left">
+        <div style="color:#888; font-weight:bold; margin-bottom:10px;">Battle Log</div>
+        <div id="game-log"></div>
     </div>
-    <div class="field-zone" id="enemy-field"></div>
-    <div class="field-zone" id="player-field"></div> 
-    <div class="zone hero-zone">
-        <div id="player-hero" class="hero player">
-            You <div class="hp-badge" id="p-hp">20</div>
-            <div class="ep-orbs" id="p-ep"></div>
-        </div>
-    </div>
-    <div class="zone hand-zone" id="player-hand"></div>
-</div>
 
-<div id="controls">
-    <div class="mana-display">💎 <span id="mana">0/0</span></div>
-    <button id="evolve" class="btn" onclick="toggleEvolve()">⚡ 진화</button>
-    <button id="end-turn" class="btn" onclick="endTurn()">턴 종료</button>
+    <div class="main-play-area">
+        <div class="hand-row" id="enemy-hand"></div>
+
+        <div class="battle-zone-container">
+            <div class="hero-spot enemy">
+                <div id="enemy-hero" class="hero-avatar enemy">Enemy</div>
+                <div class="hp-pill" id="e-hp">20</div>
+                <div class="ep-dots" id="e-ep"></div>
+            </div>
+
+            <div class="field-row" id="enemy-field"></div>
+            <div class="battle-divider"></div>
+            <div class="field-row" id="player-field"></div>
+
+            <div class="hero-spot player">
+                <div id="player-hero" class="hero-avatar player">You</div>
+                <div class="hp-pill" id="p-hp">20</div>
+                <div class="ep-dots" id="p-ep"></div>
+            </div>
+        </div>
+
+        <div class="hand-row" id="player-hand"></div>
+    </div>
+
+    <div class="sidebar-right">
+        <div class="mana-gem">💎 <span id="mana">0/0</span></div>
+        <button id="btn-evolve" class="action-btn" onclick="toggleEvolve()">⚡ 진화</button>
+        <button id="btn-end" class="action-btn" onclick="endTurn()">턴 종료</button>
+    </div>
 </div>
-<div id="log-window"></div>
 
 <script>
     /* =========================================
-       [1] 데이터베이스 (오류 방지용 기본값 처리 포함)
+       [1] 데이터베이스
        ========================================= */
     const cardsDB = [
-        { id: 1, cost: 1, atk: 1, hp: 2, name: "고블린", desc: "능력 없음", art: "https://via.placeholder.com/140x100/555/fff?text=Goblin" },
+        { id: 1, cost: 1, atk: 1, hp: 2, name: "고블린", desc: "바닐라", art: "https://via.placeholder.com/140x100/555/fff?text=Goblin" },
         { id: 2, cost: 1, atk: 1, hp: 1, name: "신속의 검사", desc: "질주", passives: ['storm'], art: "https://via.placeholder.com/140x100/333/fff?text=QuickBlade" },
-        { id: 3, cost: 2, atk: 2, hp: 2, name: "파이터", desc: "능력 없음", art: "https://via.placeholder.com/140x100/777/fff?text=Fighter" },
+        { id: 3, cost: 2, atk: 2, hp: 2, name: "파이터", desc: "바닐라", art: "https://via.placeholder.com/140x100/777/fff?text=Fighter" },
         { id: 4, cost: 2, atk: 1, hp: 3, name: "방패병", desc: "수호", passives: ['ward'], art: "https://via.placeholder.com/140x100/888/fff?text=Shield" },
         { id: 5, cost: 2, atk: 2, hp: 1, name: "닌자", desc: "잠복", passives: ['ambush'], art: "https://via.placeholder.com/140x100/222/fff?text=Ninja" },
         { id: 6, cost: 2, atk: 1, hp: 1, name: "독사", desc: "필살", passives: ['bane'], art: "https://via.placeholder.com/140x100/609/fff?text=Snake" },
         { id: 7, cost: 2, atk: 2, hp: 2, name: "견습 기사", desc: "출격: 1장 드로우", fanfare: [{type:'draw', val:1}], art: "https://via.placeholder.com/140x100/349/fff?text=Draw" },
         { id: 8, cost: 2, atk: 2, hp: 2, name: "용의 전령", desc: "출격: 증강(4) +2/+2", enhance: {cost:4, effects:[{type:'buff', atk:2, hp:2}]}, art: "https://via.placeholder.com/140x100/d60/fff?text=Enhance" },
         { id: 9, cost: 3, atk: 2, hp: 3, name: "치유사", desc: "출격: 리더 2 회복", fanfare: [{type:'heal_leader', val:2}], art: "https://via.placeholder.com/140x100/fff/333?text=Heal" },
-        { id: 10, cost: 3, atk: 3, hp: 2, name: "창술사", desc: "공격시: +1/+0", strike: [{type:'buff', atk:1, hp:0}], art: "https://via.placeholder.com/140x100/e67/fff?text=Strike" },
+        { id: 10, cost: 3, atk: 3, hp: 2, name: "창술사", desc: "공격시: 이 추종자 +1/+0", strike: [{type:'buff', atk:1, hp:0}], art: "https://via.placeholder.com/140x100/e67/fff?text=Strike" },
         { id: 11, cost: 3, atk: 2, hp: 2, name: "마법 기사", desc: "질주", passives: ['storm'], art: "https://via.placeholder.com/140x100/39f/fff?text=Storm" },
         { id: 12, cost: 3, atk: 1, hp: 4, name: "유령", desc: "위압 (공격받지 않음)", passives: ['intimidate'], art: "https://via.placeholder.com/140x100/aaa/fff?text=Ghost" },
         { id: 13, cost: 3, atk: 1, hp: 1, name: "해골 소환사", desc: "유언: 해골(1/1) 소환", lastWords: [{type:'summon', id: 99}], art: "https://via.placeholder.com/140x100/333/fff?text=SkullSum" },
@@ -305,7 +372,6 @@
        3. 덱 빌더 로직
        ------------------------------------------------------------------ */
     function initBuilder() {
-        // [수정] 기본 30장 채우기 (각 3장씩 10종류)
         for(let i=0; i<10; i++) { addToDeck(cardsDB[i]); addToDeck(cardsDB[i]); addToDeck(cardsDB[i]); }
         renderBuilder();
     }
@@ -334,10 +400,28 @@
         pool.innerHTML=''; list.innerHTML='';
         
         cardsDB.filter(c=>c.id!==99).forEach(c => {
+            const inDeck = myDeckList.find(x => x.id === c.id);
+            const count = inDeck ? inDeck.count : 0;
+            const isMaxed = count >= 3;
+
             const div = document.createElement('div');
-            div.className = 'card'; // 공통 카드 스타일
-            div.innerHTML = renderCardInner(c, false);
-            div.onclick = () => addToDeck(c);
+            // 3장일 경우 maxed-out
+            div.className = `card ${isMaxed ? 'maxed-out' : ''}`;
+            
+            let inner = renderCardInner(c, false);
+            
+            // [배지 & 안내문구 처리]
+            if(count > 0) {
+                inner += `<div class="pool-count-badge">x${count}</div>`;
+            }
+            if(isMaxed) {
+                inner += `<div class="max-overlay-text">이미 최대 장수로<br>포함되었습니다</div>`;
+                div.onclick = null;
+            } else {
+                div.onclick = () => addToDeck(c);
+            }
+
+            div.innerHTML = inner;
             pool.appendChild(div);
         });
 
@@ -347,16 +431,18 @@
             const div = document.createElement('div');
             div.className = 'deck-item';
             div.innerHTML = `
-                <div class="item-cost">${item.data.cost}</div>
-                <div class="item-name">${item.data.name}</div>
-                <div class="item-count">x${item.count}</div>
+                <div class="deck-item-left">
+                    <div class="list-cost">${item.data.cost}</div>
+                    <div class="list-name">${item.data.name}</div>
+                </div>
+                <div class="list-count">x${item.count}</div>
             `;
             div.onclick = () => removeFromDeck(item.id);
             list.appendChild(div);
         });
 
         document.getElementById('deck-count-display').innerText = `${total} / 40`;
-        document.getElementById('save-deck-btn').disabled = (total < 30);
+        document.getElementById('btn-finish-deck').disabled = (total < 30);
     }
 
     function toStartScreen() {
@@ -395,7 +481,7 @@
             ...data, uid: Math.random().toString(),
             curAtk: data.atk, curHp: data.hp,
             canAttack: false, hasAttacked: false, evolved: false, summonTurn: -1,
-            passives: data.passives ? [...data.passives] : [] // [수정] 안전한 복사
+            passives: data.passives ? [...data.passives] : []
         };
     }
 
@@ -405,21 +491,21 @@
         evolvedThisTurn = false; isEvolveMode = false;
         pField.forEach(c => { c.canAttack = true; c.hasAttacked = false; });
         draw(pDeck, pHand);
-        log(`--- ${myTurnCount}턴 ---`);
-        document.getElementById('end-turn').disabled = false;
+        log(`--- ${myTurnCount}턴 시작 ---`);
+        document.getElementById('btn-end').disabled = false;
         updateView();
     }
 
     function endTurn() {
         if(!isPlayerTurn) return;
         isPlayerTurn = false; isEvolveMode = false;
-        document.getElementById('end-turn').disabled = true;
+        document.getElementById('btn-end').disabled = true;
         pField.forEach(c => c.canAttack = false);
         updateView();
         setTimeout(startEnemyTurn, 1000);
     }
 
-    /* --- [수정] 드래그 이벤트 시스템 (필드 인식 강화) --- */
+    /* --- 드래그 이벤트 (JS 바인딩) --- */
     function setupDragEvents(el, source, index) {
         el.setAttribute('draggable', 'true');
         el.onmousedown = (e) => e.stopPropagation(); 
@@ -427,13 +513,14 @@
         el.addEventListener('dragstart', (e) => {
             if(!isPlayerTurn) { e.preventDefault(); return; }
             dragSource = source; draggedIdx = index;
-            
-            // [중요] 데이터 설정해야 파이어폭스 등에서 작동
             e.dataTransfer.setData('text/plain', index);
             e.dataTransfer.effectAllowed = 'move';
-            
             el.classList.add('dragging');
-            if(source === 'field') highlightTargets(pField[index]);
+            if(source === 'field') {
+                const card = pField[index];
+                if(!card.canAttack) return;
+                highlightTargets(card);
+            }
         });
         
         el.addEventListener('dragend', () => {
@@ -443,10 +530,9 @@
         });
     }
 
-    // [중요] 필드 드롭존 설정 (이벤트 리스너 방식)
     const pFieldEl = document.getElementById('player-field');
     pFieldEl.addEventListener('dragover', (e) => {
-        e.preventDefault(); // 필수
+        e.preventDefault(); 
         if(dragSource === 'hand') pFieldEl.classList.add('drag-hover');
     });
     pFieldEl.addEventListener('dragleave', () => pFieldEl.classList.remove('drag-hover'));
@@ -464,7 +550,7 @@
         });
     }
 
-    /* --- 게임 액션 --- */
+    /* --- 액션 로직 --- */
     function playCard(idx) {
         const card = pHand[idx];
         let cost = card.cost; let enhanced = false;
@@ -473,10 +559,7 @@
         if(pMana >= cost && pField.length < 5) {
             pMana -= cost; pHand.splice(idx, 1);
             card.summonTurn = myTurnCount;
-            // 패시브 확인 (안전하게 처리)
-            const ps = card.passives || [];
-            if(ps.includes('rush') || ps.includes('storm')) card.canAttack = true;
-            
+            if((card.passives||[]).includes('rush') || (card.passives||[]).includes('storm')) card.canAttack = true;
             pField.push(card);
             log(`${card.name} 소환`);
             if(card.fanfare) applyEffects(card.fanfare, card, null);
@@ -551,7 +634,6 @@
         updateView();
     }
 
-    /* --- 유틸 --- */
     function calcDmg(dmg, target) {
         if((target.passives||[]).includes('barrier')) { removePassive(target, 'barrier'); return 0; }
         return dmg;
@@ -594,9 +676,8 @@
 
     function draw(deck, hand) { if(deck.length>0 && hand.length<9) hand.push(deck.pop()); }
     function shuffle(a) { a.sort(()=>Math.random()-0.5); }
-    function log(m) { const d=document.createElement('div'); d.innerText=m; document.getElementById('log-window').prepend(d); }
+    function log(m) { const d=document.createElement('div'); d.innerText=m; document.getElementById('game-log').prepend(d); }
 
-    /* --- AI --- */
     function startEnemyTurn() {
         let eTurn = myTurnCount + (isFirst ? 0 : 1);
         eMaxMana = Math.min(10, isFirst ? myTurnCount : myTurnCount+1); eMana = eMaxMana;
@@ -644,15 +725,19 @@
         }, 1500);
     }
 
-    /* --- 뷰 렌더링 --- */
     function updateView() {
         document.getElementById('mana').innerText = `${pMana}/${pMaxMana}`;
         document.getElementById('p-hp').innerText = pHP; document.getElementById('e-hp').innerText = eHP;
         renderOrbs('p-ep', pEP, isFirst?2:3); renderOrbs('e-ep', eEP, isFirst?3:2);
-        
-        const evBtn = document.getElementById('evolve');
+        const evBtn = document.getElementById('btn-evolve');
         evBtn.classList.toggle('active', isEvolveMode);
         
+        const endBtn = document.getElementById('btn-end');
+        endBtn.disabled = !isPlayerTurn;
+        
+        const unlock = isFirst ? 5 : 4;
+        if(isPlayerTurn && myTurnCount >= unlock && pEP > 0 && !evolvedThisTurn) evBtn.disabled = false; else evBtn.disabled = true;
+
         renderHand(pHand, 'player-hand', true); renderHand(eHand, 'enemy-hand', false);
         renderField(pField, 'player-field', true); renderField(eField, 'enemy-field', false);
         setupAttackTarget(document.getElementById('enemy-hero'), 'hero', 0);
@@ -684,13 +769,13 @@
         return `
             <div class="card-cost ${activeEnhance?'enhance-cost':''}">${displayCost}</div>
             <div class="icon-row">${badges}</div>
-            <div class="card-top"><div class="card-art" style="background-image:url('${c.art}')"></div></div>
+            <div class="card-art" style="background-image:url('${c.art}')"></div>
+            <div class="card-mid"><div class="card-name">${c.name}</div></div>
             <div class="card-bottom">
-                <div class="card-name">${c.name}</div>
                 <div class="card-desc">${c.desc||''}</div>
-                <div class="stat-box stat-atk">${c.curAtk!==undefined?c.curAtk:c.atk}</div>
-                <div class="stat-box stat-hp">${c.curHp!==undefined?c.curHp:c.hp}</div>
             </div>
+            <div class="stat-box stat-atk">${c.curAtk!==undefined?c.curAtk:c.atk}</div>
+            <div class="stat-box stat-hp">${c.curHp!==undefined?c.curHp:c.hp}</div>
         `;
     }
 
