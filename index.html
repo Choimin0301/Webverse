@@ -2,259 +2,12 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Webverse: Final UI Restoration</title>
-    <style>
-        /* --- 1. 글로벌 테마 --- */
-        :root {
-            --bg-dark: #0b0c10;
-            --panel-bg: #1f2833;
-            --accent-gold: #f1c40f;
-            --accent-green: #2ecc71;
-            --text-main: #c5c6c7;
-            --card-width: 110px;
-            --card-height: 150px;
-        }
-        
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background-color: var(--bg-dark); 
-            color: var(--text-main); 
-            margin: 0; height: 100vh; 
-            display: flex; flex-direction: column; 
-            overflow: hidden; user-select: none; 
-        }
-
-        /* --- 2. 덱 빌더 UI (이미지 스타일 복구) --- */
-        #deck-builder-screen { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #151515; z-index: 10000; 
-            display: flex; flex-direction: column; 
-        }
-
-        .builder-header { 
-            height: 60px; background: #222; 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 40px; border-bottom: 2px solid var(--accent-gold);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .builder-header h2 { margin: 0; color: var(--accent-gold); font-size: 24px; letter-spacing: 1px; }
-        .deck-counter-badge {
-            background: #333; padding: 6px 20px; border-radius: 20px;
-            font-weight: bold; font-size: 18px; color: white; border: 1px solid #555;
-        }
-
-        .builder-body { flex: 1; display: flex; overflow: hidden; position: relative; }
-        
-        /* 좌측: 카드 풀 (그리드) */
-        .card-pool { 
-            flex: 1; padding: 40px; overflow-y: auto; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-            gap: 25px; align-content: start;
-            background: #1a1a1a;
-        }
-
-        /* 우측: 덱 리스트 (사이드바) */
-        .my-deck-panel { 
-            width: 340px; background: #10151b; 
-            border-left: 1px solid #333; 
-            display: flex; flex-direction: column;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-        }
-        .deck-list-scroll {
-            flex: 1; padding: 15px; overflow-y: auto; 
-            display: flex; flex-direction: column; gap: 8px;
-        }
-
-        /* 덱 리스트 아이템 (파란색 바 스타일 복구) */
-        .deck-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(90deg, #1c2e3f, #2b455f);
-            border: 1px solid #3d5a75; 
-            border-radius: 6px;
-            padding: 8px 12px; cursor: pointer; 
-            transition: all 0.1s; position: relative;
-        }
-        .deck-item:hover { filter: brightness(1.2); border-color: #64b5f6; transform: translateX(-5px); }
-        
-        .deck-item-left { display: flex; align-items: center; gap: 12px; }
-        .list-cost {
-            width: 24px; height: 24px; background: #2980b9; 
-            color: white; border-radius: 50%; border: 2px solid #8ecafc;
-            display: flex; justify-content: center; align-items: center; 
-            font-weight: bold; font-size: 13px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .list-name { font-size: 14px; font-weight: bold; color: #ecf0f1; text-shadow: 1px 1px 2px black; }
-        .list-count { color: var(--accent-gold); font-weight: bold; font-size: 14px; }
-
-        .builder-footer { 
-            height: 80px; background: #1a1a1a; 
-            display: flex; align-items: center; justify-content: center; 
-            border-top: 1px solid #333;
-        }
-        .start-btn {
-            padding: 14px 60px; font-size: 20px; font-weight: bold;
-            background: #27ae60; color: white; border: none; border-radius: 30px;
-            cursor: pointer; box-shadow: 0 4px 0 #1e8449; transition: transform 0.1s;
-        }
-        .start-btn:active { transform: translateY(4px); box-shadow: none; }
-        .start-btn:disabled { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.5; }
-
-
-        /* --- 3. 카드 디자인 (섀도우버스 스타일 복구) --- */
-        .card { 
-            width: var(--card-width); height: var(--card-height); 
-            background: #2c3e50; /* 어두운 배경 */
-            color: #333; 
-            border-radius: 8px; position: relative; 
-            display: flex; flex-direction: column; cursor: pointer; 
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5); 
-            border: 2px solid #777; 
-            transition: transform 0.1s; flex-shrink: 0;
-            overflow: hidden;
-        }
-        .card:hover { transform: scale(1.1); z-index: 500; border-color: #fff; }
-        .card.in-hand:hover { transform: translateY(-60px) scale(1.4); z-index: 1000; }
-
-        /* 카드 내부 레이아웃 */
-        .card-art { 
-            flex: 1.4; background: #555; background-size: cover; background-position: center; 
-            border-bottom: 2px solid #d4af37; /* 금색 라인 */
-        }
-        .card-mid { 
-            background: #fff; padding: 2px 0; text-align: center; 
-            border-bottom: 1px solid #ccc; height: 20px; 
-            display: flex; align-items: center; justify-content: center;
-        }
-        .card-name { font-size: 11px; font-weight: 800; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
-        .card-bottom { 
-            flex: 1; background: #eee; padding: 4px; 
-            position: relative; display: flex; align-items: center; justify-content: center; 
-        }
-        .card-desc { font-size: 9px; line-height: 1.2; text-align: center; color: #333; height: 100%; overflow: hidden; }
-
-        /* 코스트 (카드 안쪽) */
-        .card-cost { 
-            position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; 
-            background: radial-gradient(circle, #3498db, #2980b9); color: white; 
-            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-weight: 900; font-size: 14px; border: 2px solid white; z-index: 10; 
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-        .enhance-active .card-cost { background: radial-gradient(circle, #2ecc71, #27ae60) !important; transform: scale(1.1); }
-
-        /* 스탯 박스 */
-        .stat-box {
-            position: absolute; bottom: 0; width: 30px; height: 26px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 14px; font-weight: 900; color: white; z-index: 10; 
-            text-shadow: 1px 1px 0 #000;
-        }
-        .stat-atk { left: 0; background: linear-gradient(45deg, #e67e22, #d35400); border-top-right-radius: 8px; }
-        .stat-hp { right: 0; background: linear-gradient(45deg, #c0392b, #e74c3c); border-top-left-radius: 8px; }
-
-        .icon-row { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; z-index: 5; flex-wrap: wrap; justify-content: flex-end; width: 60px; pointer-events: none; }
-        .keyword-icon { width: 16px; height: 16px; background: rgba(0,0,0,0.8); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; border: 1px solid white; box-shadow: 1px 1px 2px black;}
-
-        /* 특수 효과 테두리 */
-        .card.ward { border-color: #bdc3c7; box-shadow: 0 0 8px #bdc3c7; }
-        .card.storm { border-color: #3498db; box-shadow: 0 0 8px #3498db; }
-        .card.rush { border-color: #f39c12; box-shadow: 0 0 8px #f39c12; }
-        .card.bane { border-bottom: 5px solid #8e44ad; }
-        .card.ambush { opacity: 0.8; border: 2px dashed #7f8c8d; }
-        .card.evolved { border-color: #f1c40f; box-shadow: 0 0 15px #f1c40f !important; }
-        .card.evolved .card-art { filter: sepia(0.3) contrast(1.2); }
-        .card.playable { box-shadow: 0 0 12px #2ecc71; border-color: #2ecc71; }
-        .card.can-attack { cursor: crosshair; box-shadow: 0 0 12px #e74c3c; border-color: #e74c3c; }
-        .card.exhausted { filter: grayscale(1); cursor: default; }
-        .card.enemy-card-back { background: linear-gradient(135deg, #1c2833, #2c3e50); border: 2px solid #555; }
-
-        /* --- [핵심] 덱 빌더 상태 표시 (수정됨) --- */
-        
-        /* 1. 수량 배지: 최상단 z-index */
-        .pool-count-badge {
-            position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
-            background: #27ae60; color: white; border: 2px solid #1e8449;
-            padding: 1px 10px; border-radius: 12px; font-size: 11px; font-weight: 900;
-            z-index: 100; /* 오버레이보다 높음 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.8);
-            white-space: nowrap; pointer-events: none;
-        }
-
-        /* 2. 최대 장수 도달 시 카드 처리 */
-        .card.maxed-out {
-            cursor: not-allowed !important;
-            border-color: #444;
-        }
-        
-        /* 3. 어두운 오버레이 (카드 내용물만 가림) */
-        .card.maxed-out::after {
-            content: "";
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.85); /* 85% 투명 블랙 */
-            z-index: 20; /* 배지(100)보다 낮음 */
-            border-radius: 6px;
-        }
-
-        /* 4. 안내 문구 (오버레이 위에 선명하게 표시) */
-        .max-overlay-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-weight: bold; font-size: 11px; text-align: center;
-            width: 95%; z-index: 50; /* 오버레이(20)보다 높음 */
-            text-shadow: 0 0 5px #000; line-height: 1.4; 
-            pointer-events: none; white-space: pre-wrap;
-        }
-
-
-        /* --- 게임 보드 UI --- */
-        #game-board { flex: 1; display: flex; padding: 0; background: #0b0c10; position: relative; }
-
-        .sidebar-left { width: 220px; background: rgba(0,0,0,0.3); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
-        #game-log { flex: 1; overflow-y: auto; font-size: 12px; color: #aaa; padding-right: 5px; }
-        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; }
-
-        .main-play-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; padding: 20px 40px; }
-        
-        .battle-zone-container { flex: 1; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; display: flex; flex-direction: column; margin: 10px 0; position: relative; }
-        .battle-divider { height: 1px; background: rgba(255,255,255,0.15); width: 100%; position: absolute; top: 50%; left: 0; }
-
-        .field-row { flex: 1; display: flex; justify-content: center; align-items: center; gap: 15px; padding: 10px; z-index: 2; min-height: 160px; }
-        .field-row.drag-hover { background: rgba(46, 204, 113, 0.05); box-shadow: inset 0 0 20px rgba(46, 204, 113, 0.2); }
-
-        .hand-row { height: 140px; display: flex; justify-content: center; align-items: center; gap: -20px; z-index: 10; }
-
-        .hero-spot { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; }
-        .hero-spot.enemy { top: -50px; } .hero-spot.player { bottom: -50px; }
-
-        .hero-avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #444; background: #333; display: flex; justify-content: center; align-items: center; font-weight: bold; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
-        .hero-avatar.player { border-color: #3498db; } .hero-avatar.enemy { border-color: #c0392b; }
-        .hero-avatar.valid-target { border-color: #e74c3c; box-shadow: 0 0 30px #e74c3c; cursor: crosshair; transform: scale(1.1); }
-
-        .hp-pill { margin-top: -10px; background: #222; border: 2px solid #fff; padding: 2px 12px; border-radius: 12px; font-weight: bold; font-size: 16px; color: white; z-index: 6; }
-        .ep-dots { position: absolute; right: -25px; top: 20px; display: flex; flex-direction: column; gap: 6px; }
-        .dot { width: 14px; height: 14px; border-radius: 50%; background: #333; border: 1px solid #666; }
-        .dot.on { background: radial-gradient(circle, #f1c40f, #e67e22); border-color: #fff; box-shadow: 0 0 8px #f1c40f; }
-
-        .sidebar-right { width: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; padding: 10px; }
-        .mana-gem { font-size: 24px; font-weight: bold; color: var(--accent-gold); display: flex; align-items: center; gap: 5px; text-shadow: 0 0 5px black; }
-        
-        .action-btn { width: 100%; padding: 15px 0; border-radius: 25px; border: none; font-weight: 900; font-size: 16px; color: white; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); transition: transform 0.1s; text-shadow: 0 1px 1px rgba(0,0,0,0.5); }
-        .action-btn:active { transform: translateY(3px); box-shadow: none; }
-        .action-btn:disabled { background: #444 !important; color: #888; cursor: not-allowed; box-shadow: none; }
-        #btn-evolve { background: linear-gradient(to right, #f1c40f, #e67e22); color: #222; }
-        #btn-evolve.active { border: 3px solid white; box-shadow: 0 0 20px #f1c40f; transform: scale(1.05); }
-        #btn-end { background: linear-gradient(to right, #2ecc71, #27ae60); }
-
-        #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .choice-btn { width: 220px; height: 140px; margin: 15px; border-radius: 15px; font-size: 22px; font-weight: bold; cursor: pointer; border: 3px solid #555; transition: transform 0.2s; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
-        .choice-btn:hover { transform: scale(1.05); border-color: white; }
-
-        .dragging { opacity: 0.4; }
-    </style>
+    <title>Webverse: Card Game</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<!-- 덱 빌더 화면 -->
 <div id="deck-builder-screen">
     <div class="builder-header">
         <h2>Deck Builder</h2>
@@ -263,6 +16,18 @@
     <div class="builder-body">
         <div class="card-pool" id="builder-pool"></div>
         <div class="my-deck-panel">
+            <!-- 전적 표시 -->
+            <div class="stats-display" id="stats-display"></div>
+
+            <!-- 덱 관리 -->
+            <div class="deck-manager">
+                <input type="text" id="deck-name-input" placeholder="덱 이름 입력...">
+                <button class="deck-manager-btn save" onclick="handleSaveDeck()">저장</button>
+                <button class="deck-manager-btn load" onclick="toggleSavedDecksList()">불러오기</button>
+            </div>
+            <div class="saved-decks-list" id="saved-decks-list" style="display:none;"></div>
+
+            <!-- 덱 리스트 -->
             <div class="deck-list-scroll" id="builder-list"></div>
         </div>
     </div>
@@ -271,6 +36,7 @@
     </div>
 </div>
 
+<!-- 게임 시작 선택 화면 -->
 <div id="start-overlay">
     <h1 style="color:var(--accent-gold); font-size: 40px; margin-bottom: 40px;">Game Start</h1>
     <div style="display:flex; gap:30px;">
@@ -285,6 +51,19 @@
     </div>
 </div>
 
+<!-- 게임 종료 모달 -->
+<div class="modal-overlay" id="game-end-modal">
+    <div class="modal-box">
+        <div class="modal-title" id="modal-result-title">결과</div>
+        <div class="modal-stats" id="modal-stats-content"></div>
+        <div class="modal-buttons">
+            <button class="modal-btn primary" onclick="restartGame()">다시 플레이</button>
+            <button class="modal-btn secondary" onclick="location.href='index.html'">덱 빌더로</button>
+        </div>
+    </div>
+</div>
+
+<!-- 게임 보드 -->
 <div id="game-board" style="display:flex;">
     <div class="sidebar-left">
         <div style="color:#888; font-weight:bold; margin-bottom:10px;">Battle Log</div>
@@ -322,519 +101,29 @@
     </div>
 </div>
 
+<!-- JavaScript 파일 로드 (순서 중요) -->
+<script src="js/cards.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/animations.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/deck-builder.js"></script>
 <script>
-    /* =========================================
-       [1] 데이터베이스
-       ========================================= */
-    const cardsDB = [
-        { id: 1, cost: 1, atk: 1, hp: 2, name: "고블린", desc: "바닐라", art: "https://via.placeholder.com/140x100/555/fff?text=Goblin" },
-        { id: 2, cost: 1, atk: 1, hp: 1, name: "신속의 검사", desc: "질주", passives: ['storm'], art: "https://via.placeholder.com/140x100/333/fff?text=QuickBlade" },
-        { id: 3, cost: 2, atk: 2, hp: 2, name: "파이터", desc: "바닐라", art: "https://via.placeholder.com/140x100/777/fff?text=Fighter" },
-        { id: 4, cost: 2, atk: 1, hp: 3, name: "방패병", desc: "수호", passives: ['ward'], art: "https://via.placeholder.com/140x100/888/fff?text=Shield" },
-        { id: 5, cost: 2, atk: 2, hp: 1, name: "닌자", desc: "잠복", passives: ['ambush'], art: "https://via.placeholder.com/140x100/222/fff?text=Ninja" },
-        { id: 6, cost: 2, atk: 1, hp: 1, name: "독사", desc: "필살", passives: ['bane'], art: "https://via.placeholder.com/140x100/609/fff?text=Snake" },
-        { id: 7, cost: 2, atk: 2, hp: 2, name: "견습 기사", desc: "출격: 1장 드로우", fanfare: [{type:'draw', val:1}], art: "https://via.placeholder.com/140x100/349/fff?text=Draw" },
-        { id: 8, cost: 2, atk: 2, hp: 2, name: "용의 전령", desc: "출격: 증강(4) +2/+2", enhance: {cost:4, effects:[{type:'buff', atk:2, hp:2}]}, art: "https://via.placeholder.com/140x100/d60/fff?text=Enhance" },
-        { id: 9, cost: 3, atk: 2, hp: 3, name: "치유사", desc: "출격: 리더 2 회복", fanfare: [{type:'heal_leader', val:2}], art: "https://via.placeholder.com/140x100/fff/333?text=Heal" },
-        { id: 10, cost: 3, atk: 3, hp: 2, name: "창술사", desc: "공격시: 이 추종자 +1/+0", strike: [{type:'buff', atk:1, hp:0}], art: "https://via.placeholder.com/140x100/e67/fff?text=Strike" },
-        { id: 11, cost: 3, atk: 2, hp: 2, name: "마법 기사", desc: "질주", passives: ['storm'], art: "https://via.placeholder.com/140x100/39f/fff?text=Storm" },
-        { id: 12, cost: 3, atk: 1, hp: 4, name: "유령", desc: "위압 (공격받지 않음)", passives: ['intimidate'], art: "https://via.placeholder.com/140x100/aaa/fff?text=Ghost" },
-        { id: 13, cost: 3, atk: 1, hp: 1, name: "해골 소환사", desc: "유언: 해골(1/1) 소환", lastWords: [{type:'summon', id: 99}], art: "https://via.placeholder.com/140x100/333/fff?text=SkullSum" },
-        { id: 14, cost: 4, atk: 3, hp: 4, name: "철벽의 기사", desc: "수호, 배리어", passives: ['ward', 'barrier'], art: "https://via.placeholder.com/140x100/ccc/333?text=Barrier" },
-        { id: 15, cost: 4, atk: 4, hp: 3, name: "노장군", desc: "진화시: 내 필드 전체 +1/+1", evolve: [{type:'buff_all', atk:1, hp:1}], art: "https://via.placeholder.com/140x100/c03/fff?text=General" },
-        { id: 16, cost: 4, atk: 2, hp: 2, name: "불사조", desc: "돌진. 유언: 패로 돌아옴", passives:['rush'], lastWords: [{type:'return_to_hand'}], art: "https://via.placeholder.com/140x100/f39/fff?text=Phoenix" },
-        { id: 17, cost: 4, atk: 2, hp: 5, name: "흡혈귀", desc: "필살, 흡혈", passives: ['bane', 'drain'], art: "https://via.placeholder.com/140x100/900/fff?text=Vampire" },
-        { id: 18, cost: 5, atk: 4, hp: 5, name: "검호", desc: "교전시: 적 전체 1 피해", clash: [{type:'aoe_damage', val:1}], art: "https://via.placeholder.com/140x100/555/fff?text=Samurai" },
-        { id: 19, cost: 5, atk: 3, hp: 3, name: "처형인", desc: "출격: 적 추종자 하나 파괴", fanfare: [{type:'destroy_enemy'}], art: "https://via.placeholder.com/140x100/000/fff?text=Killer" },
-        { id: 20, cost: 6, atk: 5, hp: 6, name: "용", desc: "오라 (능력 대상 안됨)", passives: ['aura'], art: "https://via.placeholder.com/140x100/060/fff?text=Dragon" },
-        { id: 21, cost: 6, atk: 4, hp: 4, name: "흑마법사", desc: "출격: 증강(9) 적 리더 5 피해", enhance: {cost:9, effects:[{type:'damage_leader', val:5, target:'enemy'}]}, art: "https://via.placeholder.com/140x100/306/fff?text=Warlock" },
-        { id: 22, cost: 7, atk: 5, hp: 5, name: "대천사", desc: "수호, 흡혈, 오라", passives: ['ward', 'drain', 'aura'], art: "https://via.placeholder.com/140x100/ffc/333?text=Archangel" },
-        { id: 23, cost: 8, atk: 7, hp: 7, name: "제네시스", desc: "질주", passives: ['storm'], art: "https://via.placeholder.com/140x100/fff/000?text=Genesis" },
-        { id: 24, cost: 10, atk: 10, hp: 10, name: "바하무트", desc: "출격: 다른 모든 추종자 파괴", fanfare: [{type:'destroy_all_others'}], art: "https://via.placeholder.com/140x100/000/f00?text=Bahamut" },
-        { id: 99, cost: 1, atk: 1, hp: 1, name: "해골", desc: "토큰", art: "https://via.placeholder.com/140x100/eee/333?text=Skeleton" }
-    ];
+    // 앱 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+        initFieldDragEvents();
 
-    /* ------------------------------------------------------------------
-       2. 상태 변수
-       ------------------------------------------------------------------ */
-    let myDeckList = []; 
-    let pDeck=[], eDeck=[], pHand=[], eHand=[], pField=[], eField=[];
-    let myTurnCount=0, isPlayerTurn=false;
-    let pMana=0, pMaxMana=0, eMana=0, eMaxMana=0;
-    let pHP=20, eHP=20;
-    let pEP=0, eEP=0;
-    let isFirst = true;
-    let evolvedThisTurn = false;
-    let isEvolveMode = false;
-    let draggedIdx = -1, dragSource = null;
-
-    /* ------------------------------------------------------------------
-       3. 덱 빌더 로직
-       ------------------------------------------------------------------ */
-    function initBuilder() {
-        for(let i=0; i<10; i++) { addToDeck(cardsDB[i]); addToDeck(cardsDB[i]); addToDeck(cardsDB[i]); }
-        renderBuilder();
-    }
-
-    function addToDeck(card) {
-        let total = myDeckList.reduce((a,b)=>a+b.count,0);
-        if(total>=40) return;
-        let existing = myDeckList.find(x=>x.id===card.id);
-        if(existing) { if(existing.count<3) existing.count++; }
-        else myDeckList.push({id:card.id, count:1, data:card});
-        renderBuilder();
-    }
-
-    function removeFromDeck(id) {
-        let idx = myDeckList.findIndex(x=>x.id===id);
-        if(idx>=0) {
-            myDeckList[idx].count--;
-            if(myDeckList[idx].count<=0) myDeckList.splice(idx,1);
+        // 마지막 덱 불러오기 시도, 실패 시 기본 덱
+        if (!loadLastDeck()) {
+            initBuilder();
+        } else {
             renderBuilder();
         }
-    }
 
-    function renderBuilder() {
-        const pool = document.getElementById('builder-pool');
-        const list = document.getElementById('builder-list');
-        pool.innerHTML=''; list.innerHTML='';
-        
-        cardsDB.filter(c=>c.id!==99).forEach(c => {
-            const inDeck = myDeckList.find(x => x.id === c.id);
-            const count = inDeck ? inDeck.count : 0;
-            const isMaxed = count >= 3;
-
-            const div = document.createElement('div');
-            // 3장일 경우 maxed-out
-            div.className = `card ${isMaxed ? 'maxed-out' : ''}`;
-            
-            let inner = renderCardInner(c, false);
-            
-            // [배지 & 안내문구 처리]
-            if(count > 0) {
-                inner += `<div class="pool-count-badge">x${count}</div>`;
-            }
-            if(isMaxed) {
-                inner += `<div class="max-overlay-text">이미 최대 장수로<br>포함되었습니다</div>`;
-                div.onclick = null;
-            } else {
-                div.onclick = () => addToDeck(c);
-            }
-
-            div.innerHTML = inner;
-            pool.appendChild(div);
-        });
-
-        let total = 0;
-        myDeckList.sort((a,b)=>a.data.cost - b.data.cost).forEach(item => {
-            total += item.count;
-            const div = document.createElement('div');
-            div.className = 'deck-item';
-            div.innerHTML = `
-                <div class="deck-item-left">
-                    <div class="list-cost">${item.data.cost}</div>
-                    <div class="list-name">${item.data.name}</div>
-                </div>
-                <div class="list-count">x${item.count}</div>
-            `;
-            div.onclick = () => removeFromDeck(item.id);
-            list.appendChild(div);
-        });
-
-        document.getElementById('deck-count-display').innerText = `${total} / 40`;
-        document.getElementById('btn-finish-deck').disabled = (total < 30);
-    }
-
-    function toStartScreen() {
-        document.getElementById('deck-builder-screen').style.display='none';
-        document.getElementById('start-overlay').style.display='flex';
-    }
-
-    /* ------------------------------------------------------------------
-       4. 게임 로직
-       ------------------------------------------------------------------ */
-    function startGame(userFirst) {
-        document.getElementById('start-overlay').style.display='none';
-        isFirst = userFirst;
-        
-        pDeck = [];
-        myDeckList.forEach(item => { for(let i=0; i<item.count; i++) pDeck.push(createInstance(item.data)); });
-        shuffle(pDeck);
-
-        eDeck = [];
-        for(let i=0; i<40; i++) eDeck.push(createInstance(cardsDB[Math.floor(Math.random()*(cardsDB.length-1))]));
-
-        for(let i=0; i<3; i++) { draw(pDeck, pHand); draw(eDeck, eHand); }
-
-        if(isFirst) {
-            pEP=2; eEP=3; draw(eDeck, eHand);
-            startPlayerTurn();
-        } else {
-            pEP=3; eEP=2; draw(pDeck, pHand);
-            startEnemyTurn();
-        }
-        updateView();
-    }
-
-    function createInstance(data) {
-        return {
-            ...data, uid: Math.random().toString(),
-            curAtk: data.atk, curHp: data.hp,
-            canAttack: false, hasAttacked: false, evolved: false, summonTurn: -1,
-            passives: data.passives ? [...data.passives] : []
-        };
-    }
-
-    function startPlayerTurn() {
-        isPlayerTurn = true; myTurnCount++;
-        pMaxMana = Math.min(10, myTurnCount); pMana = pMaxMana;
-        evolvedThisTurn = false; isEvolveMode = false;
-        pField.forEach(c => { c.canAttack = true; c.hasAttacked = false; });
-        draw(pDeck, pHand);
-        log(`--- ${myTurnCount}턴 시작 ---`);
-        document.getElementById('btn-end').disabled = false;
-        updateView();
-    }
-
-    function endTurn() {
-        if(!isPlayerTurn) return;
-        isPlayerTurn = false; isEvolveMode = false;
-        document.getElementById('btn-end').disabled = true;
-        pField.forEach(c => c.canAttack = false);
-        updateView();
-        setTimeout(startEnemyTurn, 1000);
-    }
-
-    /* --- 드래그 이벤트 (JS 바인딩) --- */
-    function setupDragEvents(el, source, index) {
-        el.setAttribute('draggable', 'true');
-        el.onmousedown = (e) => e.stopPropagation(); 
-        
-        el.addEventListener('dragstart', (e) => {
-            if(!isPlayerTurn) { e.preventDefault(); return; }
-            dragSource = source; draggedIdx = index;
-            e.dataTransfer.setData('text/plain', index);
-            e.dataTransfer.effectAllowed = 'move';
-            el.classList.add('dragging');
-            if(source === 'field') {
-                const card = pField[index];
-                if(!card.canAttack) return;
-                highlightTargets(card);
-            }
-        });
-        
-        el.addEventListener('dragend', () => {
-            el.classList.remove('dragging');
-            clearHighlights();
-            dragSource = null; draggedIdx = -1;
-        });
-    }
-
-    const pFieldEl = document.getElementById('player-field');
-    pFieldEl.addEventListener('dragover', (e) => {
-        e.preventDefault(); 
-        if(dragSource === 'hand') pFieldEl.classList.add('drag-hover');
+        // 전적 표시 업데이트
+        updateStatsDisplay();
     });
-    pFieldEl.addEventListener('dragleave', () => pFieldEl.classList.remove('drag-hover'));
-    pFieldEl.addEventListener('drop', (e) => {
-        e.preventDefault();
-        pFieldEl.classList.remove('drag-hover');
-        if(dragSource === 'hand') playCard(draggedIdx);
-    });
-
-    function setupAttackTarget(el, type, index) {
-        el.addEventListener('dragover', (e) => e.preventDefault());
-        el.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if(dragSource === 'field') attack(draggedIdx, type, index);
-        });
-    }
-
-    /* --- 액션 로직 --- */
-    function playCard(idx) {
-        const card = pHand[idx];
-        let cost = card.cost; let enhanced = false;
-        if(card.enhance && pMana >= card.enhance.cost) { cost = card.enhance.cost; enhanced = true; }
-
-        if(pMana >= cost && pField.length < 5) {
-            pMana -= cost; pHand.splice(idx, 1);
-            card.summonTurn = myTurnCount;
-            if((card.passives||[]).includes('rush') || (card.passives||[]).includes('storm')) card.canAttack = true;
-            pField.push(card);
-            log(`${card.name} 소환`);
-            if(card.fanfare) applyEffects(card.fanfare, card, null);
-            if(enhanced && card.enhance.effects) applyEffects(card.enhance.effects, card, null);
-            updateView();
-        }
-    }
-
-    function attack(attackerIdx, targetType, targetIdx) {
-        const att = pField[attackerIdx];
-        if(!att.canAttack) return;
-        
-        const isSummonTurn = att.summonTurn === myTurnCount;
-        const ps = att.passives || [];
-        const hasStorm = ps.includes('storm');
-        const warders = eField.filter(c => (c.passives||[]).includes('ward') && !(c.passives||[]).includes('ambush'));
-        
-        if(targetType === 'hero') {
-            if(isSummonTurn && !hasStorm) { log("돌진은 리더 공격 불가"); return; }
-            if(warders.length > 0) { log("수호 하수인이 있습니다."); return; }
-        }
-        if(targetType === 'unit') {
-            const target = eField[targetIdx];
-            const tps = target.passives || [];
-            if(tps.includes('ambush') || tps.includes('intimidate')) return;
-            if(warders.length > 0 && !tps.includes('ward')) { log("수호 하수인을 먼저 공격하세요."); return; }
-        }
-
-        att.canAttack = false; att.hasAttacked = true;
-        if(ps.includes('ambush')) removePassive(att, 'ambush');
-
-        let targetCard = targetType==='unit' ? eField[targetIdx] : null;
-        if(att.strike) applyEffects(att.strike, att, targetCard);
-        
-        if(targetType === 'unit') {
-            const def = eField[targetIdx];
-            if(att.clash) applyEffects(att.clash, att, def);
-            if(def.clash) applyEffects(def.clash, def, att);
-            
-            if(att.curHp > 0 && def.curHp > 0) {
-                const dmgToDef = calcDmg(att.curAtk, def);
-                const dmgToAtt = calcDmg(def.curAtk, att);
-                dealDamage(def, dmgToDef); dealDamage(att, dmgToAtt);
-                
-                if((att.passives||[]).includes('drain')) pHP += dmgToDef;
-                if((def.passives||[]).includes('drain')) eHP += dmgToAtt;
-                if((att.passives||[]).includes('bane')) def.curHp = 0;
-                if((def.passives||[]).includes('bane')) att.curHp = 0;
-            }
-        } else {
-            eHP -= att.curAtk;
-            if((att.passives||[]).includes('drain')) pHP += att.curAtk;
-        }
-        resolveDeaths(); updateView();
-    }
-
-    function toggleEvolve() {
-        if(!isPlayerTurn) return;
-        const unlock = isFirst ? 5 : 4;
-        if(myTurnCount < unlock || pEP <= 0 || evolvedThisTurn) return;
-        isEvolveMode = !isEvolveMode;
-        updateView();
-    }
-
-    function doEvolve(idx) {
-        const c = pField[idx]; if(c.evolved) return;
-        pEP--; evolvedThisTurn = true; isEvolveMode = false;
-        c.evolved = true; c.curAtk += 2; c.curHp += 2;
-        if(!c.hasAttacked) c.canAttack = true;
-        log(`${c.name} 진화!`);
-        if(c.evolve) applyEffects(c.evolve, c, null);
-        updateView();
-    }
-
-    function calcDmg(dmg, target) {
-        if((target.passives||[]).includes('barrier')) { removePassive(target, 'barrier'); return 0; }
-        return dmg;
-    }
-    function dealDamage(u, v) { u.curHp -= v; }
-    function removePassive(u, p) { u.passives = (u.passives||[]).filter(x=>x!==p); }
-    
-    function resolveDeaths() {
-        const proc = (list) => {
-            for(let i=list.length-1; i>=0; i--) {
-                if(list[i].curHp <= 0) {
-                    const c = list[i]; list.splice(i, 1);
-                    if(c.lastWords) applyEffects(c.lastWords, c, null);
-                }
-            }
-        }
-        proc(pField); proc(eField);
-        if(pHP<=0 || eHP<=0) { alert(pHP<=0 ? "패배..." : "승리!"); location.reload(); }
-    }
-
-    function applyEffects(effs, src, tgt) {
-        if(!effs) return;
-        effs.forEach(ef => {
-            if(ef.type==='draw') for(let i=0;i<ef.val;i++) draw(pDeck, pHand);
-            if(ef.type==='buff') { src.curAtk+=ef.atk; src.curHp+=ef.hp; }
-            if(ef.type==='buff_all') pField.forEach(c=>{c.curAtk+=ef.atk; c.curHp+=ef.hp;});
-            if(ef.type==='heal_leader') pHP+=ef.val;
-            if(ef.type==='damage_leader') { if(ef.target==='enemy') eHP-=ef.val; else pHP-=ef.val; }
-            if(ef.type==='aoe_damage') eField.forEach(c=>c.curHp-=ef.val);
-            if(ef.type==='destroy_enemy') if(eField.length>0) eField.pop();
-            if(ef.type==='destroy_all_others') { pField=[src]; eField=[]; }
-            if(ef.type==='return_to_hand') if(pHand.length<9) pHand.push(createInstance(cardsDB.find(x=>x.name===src.name)));
-            if(ef.type==='summon') { 
-                const token = cardsDB.find(x=>x.id===ef.id);
-                if(pField.length<5) pField.push(createInstance(token));
-            }
-        });
-        resolveDeaths();
-    }
-
-    function draw(deck, hand) { if(deck.length>0 && hand.length<9) hand.push(deck.pop()); }
-    function shuffle(a) { a.sort(()=>Math.random()-0.5); }
-    function log(m) { const d=document.createElement('div'); d.innerText=m; document.getElementById('game-log').prepend(d); }
-
-    function startEnemyTurn() {
-        let eTurn = myTurnCount + (isFirst ? 0 : 1);
-        eMaxMana = Math.min(10, isFirst ? myTurnCount : myTurnCount+1); eMana = eMaxMana;
-        eField.forEach(c => c.canAttack = true); draw(eDeck, eHand);
-        
-        eHand.sort((a,b)=>b.cost-a.cost);
-        for(let i=eHand.length-1; i>=0; i--) {
-            let c=eHand[i], cost=c.cost;
-            if(c.enhance && eMana >= c.enhance.cost) cost = c.enhance.cost;
-            if(eMana >= cost && eField.length < 5) {
-                eMana -= cost; eHand.splice(i,1); c.summonTurn=999;
-                const ps = c.passives || [];
-                if(ps.includes('rush') || ps.includes('storm')) c.canAttack=true;
-                eField.push(c); log(`🔴 적 ${c.name} 소환`);
-                if(cost>c.cost && c.enhance) applyEffects(c.enhance.effects, c, null);
-                else if(c.fanfare) applyEffects(c.fanfare, c, null);
-            }
-        }
-        
-        const unlock = isFirst ? 4 : 5;
-        if(eTurn >= unlock && eEP > 0 && eField.length > 0) {
-            const t = eField.find(c => !c.evolved);
-            if(t) { eEP--; t.evolved=true; t.curAtk+=2; t.curHp+=2; t.canAttack=true; log("⚡ 적 진화"); }
-        }
-        updateView();
-
-        setTimeout(() => {
-            const pWard = pField.some(c=>(c.passives||[]).includes('ward') && !(c.passives||[]).includes('ambush'));
-            eField.forEach(att => {
-                if(!att.canAttack) return;
-                const attPs = att.passives || [];
-                let target = null;
-                if(!pWard && att.curAtk >= pHP) { pHP -= att.curAtk; log("적 리더 공격!"); return; }
-                if(pWard) target = pField.find(c=>(c.passives||[]).includes('ward'));
-                else if(pField.length > 0) target = pField[0];
-
-                if(target) {
-                    att.curHp -= target.curAtk; target.curHp -= att.curAtk;
-                    log(`⚔️ 적 ${att.name} -> ${target.name}`);
-                } else if (!pWard && !attPs.includes('rush')) {
-                    pHP -= att.curAtk; log("적 리더 공격");
-                }
-            });
-            resolveDeaths(); updateView(); startPlayerTurn();
-        }, 1500);
-    }
-
-    function updateView() {
-        document.getElementById('mana').innerText = `${pMana}/${pMaxMana}`;
-        document.getElementById('p-hp').innerText = pHP; document.getElementById('e-hp').innerText = eHP;
-        renderOrbs('p-ep', pEP, isFirst?2:3); renderOrbs('e-ep', eEP, isFirst?3:2);
-        const evBtn = document.getElementById('btn-evolve');
-        evBtn.classList.toggle('active', isEvolveMode);
-        
-        const endBtn = document.getElementById('btn-end');
-        endBtn.disabled = !isPlayerTurn;
-        
-        const unlock = isFirst ? 5 : 4;
-        if(isPlayerTurn && myTurnCount >= unlock && pEP > 0 && !evolvedThisTurn) evBtn.disabled = false; else evBtn.disabled = true;
-
-        renderHand(pHand, 'player-hand', true); renderHand(eHand, 'enemy-hand', false);
-        renderField(pField, 'player-field', true); renderField(eField, 'enemy-field', false);
-        setupAttackTarget(document.getElementById('enemy-hero'), 'hero', 0);
-    }
-
-    function renderOrbs(id, count, max) {
-        const el = document.getElementById(id); el.innerHTML='';
-        for(let i=0; i<max; i++) {
-            const o = document.createElement('div'); o.className = `orb ${i<count?'on':''}`; el.appendChild(o);
-        }
-    }
-
-    function renderCardInner(c, hide) {
-        if(hide) return `<div class="card enemy-card-back"><div style="width:100%;height:100%;background:linear-gradient(135deg,#222,#444);"></div></div>`;
-        
-        const passives = c.passives || [];
-        let badges = '';
-        if(passives.includes('ward')) badges+='<span class="keyword-icon">🛡️</span>';
-        if(passives.includes('bane')) badges+='<span class="keyword-icon" style="background:#8e44ad">☠️</span>';
-        if(passives.includes('storm')) badges+='<span class="keyword-icon" style="background:#2980b9">⚡</span>';
-        if(passives.includes('rush')) badges+='<span class="keyword-icon" style="background:#f39c12">👟</span>';
-        if(passives.includes('ambush')) badges+='<span class="keyword-icon" style="background:#555">🥷</span>';
-        if(passives.includes('drain')) badges+='<span class="keyword-icon" style="background:#c0392b">🩸</span>';
-        if(passives.includes('barrier')) badges+='<span class="keyword-icon" style="background:#f1c40f">🔰</span>';
-
-        let activeEnhance = !hide && isPlayerTurn && c.enhance && pMana >= c.enhance.cost && !c.summonTurn;
-        let displayCost = activeEnhance ? c.enhance.cost : c.cost;
-        
-        return `
-            <div class="card-cost ${activeEnhance?'enhance-cost':''}">${displayCost}</div>
-            <div class="icon-row">${badges}</div>
-            <div class="card-art" style="background-image:url('${c.art}')"></div>
-            <div class="card-mid"><div class="card-name">${c.name}</div></div>
-            <div class="card-bottom">
-                <div class="card-desc">${c.desc||''}</div>
-            </div>
-            <div class="stat-box stat-atk">${c.curAtk!==undefined?c.curAtk:c.atk}</div>
-            <div class="stat-box stat-hp">${c.curHp!==undefined?c.curHp:c.hp}</div>
-        `;
-    }
-
-    function renderHand(list, id, isP) {
-        const el = document.getElementById(id); el.innerHTML='';
-        list.forEach((c, i) => {
-            const d = document.createElement('div');
-            const p = c.passives || [];
-            d.className = `card ${isP?'in-hand':''} ${p.join(' ')}`;
-            d.innerHTML = renderCardInner(c, !isP);
-            if(isP) {
-                let cost = c.enhance && pMana >= c.enhance.cost ? c.enhance.cost : c.cost;
-                if(pMana >= cost && isPlayerTurn) d.classList.add('playable');
-                setupDragEvents(d, 'hand', i);
-            }
-            el.appendChild(d);
-        });
-    }
-
-    function renderField(list, id, isP) {
-        const el = document.getElementById(id); el.innerHTML='';
-        list.forEach((c, i) => {
-            const d = document.createElement('div');
-            const p = c.passives || [];
-            d.className = `card ${p.join(' ')} ${c.evolved?'evolved':''}`;
-            d.innerHTML = renderCardInner(c, false);
-            if(isP) {
-                if(isEvolveMode && !c.evolved) { d.style.boxShadow="0 0 15px white"; d.onclick=()=>doEvolve(i); }
-                else if(c.canAttack && isPlayerTurn && !isEvolveMode) { d.classList.add('can-attack'); setupDragEvents(d, 'field', i); }
-                else d.classList.add('exhausted');
-            } else {
-                setupAttackTarget(d, 'unit', i);
-            }
-            el.appendChild(d);
-        });
-    }
-
-    function highlightTargets(card) {
-        const isSummon = card.summonTurn === myTurnCount;
-        const storm = (card.passives||[]).includes('storm');
-        const warders = eField.filter(c=>(c.passives||[]).includes('ward') && !(c.passives||[]).includes('ambush'));
-        
-        if(warders.length > 0) {
-            const nodes = document.getElementById('enemy-field').children;
-            eField.forEach((c, i) => {
-                if((c.passives||[]).includes('ward') && !(c.passives||[]).includes('ambush')) 
-                    nodes[i].classList.add('valid-target');
-            });
-        } else {
-            if(!isSummon || storm) document.getElementById('enemy-hero').classList.add('valid-target');
-            const nodes = document.getElementById('enemy-field').children;
-            eField.forEach((c, i) => {
-                if(!(c.passives||[]).includes('ambush') && !(c.passives||[]).includes('intimidate')) nodes[i].classList.add('valid-target');
-            });
-        }
-    }
-    function clearHighlights() { document.querySelectorAll('.valid-target').forEach(e=>e.classList.remove('valid-target')); }
-
-    initBuilder();
 </script>
 </body>
 </html>
