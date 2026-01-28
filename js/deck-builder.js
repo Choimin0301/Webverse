@@ -3,16 +3,65 @@
  */
 
 /**
+ * 기본 덱 설정
+ * 형식: { 카드ID: 장수 }
+ * 여기서 원하는 기본 덱을 설정하세요
+ */
+const DEFAULT_DECK = {
+    1: 2,   // 고블린
+    2: 2,   // 신속의 검사
+    3: 2,   // 파이터
+    4: 2,   // 방패병
+    5: 2,   // 닌자
+    6: 2,   // 독사
+    7: 2,   // 견습 기사
+    8: 2,   // 용의 전령
+    9: 2,   // 치유사
+    10: 2,  // 창술사
+    11: 2,  // 마법 기사
+    12: 2,  // 유령
+    13: 2,  // 해골 소환사
+    14: 2,  // 철벽의 기사
+    15: 2,  // 노장군
+    16: 2,  // 불사조
+    17: 2,  // 흡혈귀
+    18: 2,  // 검호
+    19: 2,  // 처형인
+    23: 1,  // 제네시스
+    24: 1,  // 바하무트
+    // 20: 0,  // 용 (미포함)
+    // 21: 0,  // 흑마법사 (미포함)
+    // 22: 0,  // 대천사 (미포함)
+};
+
+/**
  * 덱 빌더 초기화
  */
 function initBuilder() {
-    // 기본 덱 구성 (처음 10장 카드 각 3장씩)
-    for (let i = 0; i < 10; i++) {
-        addToDeck(cardsDB[i]);
-        addToDeck(cardsDB[i]);
-        addToDeck(cardsDB[i]);
-    }
+    // DEFAULT_DECK 설정에 따라 덱 구성
+    Object.entries(DEFAULT_DECK).forEach(([cardId, count]) => {
+        const card = cardsDB.find(c => c.id === parseInt(cardId));
+        if (card && count > 0) {
+            for (let i = 0; i < count; i++) {
+                addToDeckSilent(card);
+            }
+        }
+    });
     renderBuilder();
+}
+
+/**
+ * 덱에 카드 추가 (렌더링 없이)
+ */
+function addToDeckSilent(card) {
+    let total = myDeckList.reduce((a, b) => a + b.count, 0);
+    if (total >= 40) return;
+    let existing = myDeckList.find(x => x.id === card.id);
+    if (existing) {
+        if (existing.count < 3) existing.count++;
+    } else {
+        myDeckList.push({ id: card.id, count: 1, data: card });
+    }
 }
 
 /**
