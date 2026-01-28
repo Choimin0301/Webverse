@@ -26,15 +26,15 @@ body {
 }
 
 .builder-header {
-    height: 60px; background: #222;
+    height: 80px; background: #222;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 40px; border-bottom: 2px solid var(--accent-gold);
+    padding: 0 50px; border-bottom: 3px solid var(--accent-gold);
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
-.builder-header h2 { margin: 0; color: var(--accent-gold); font-size: 24px; letter-spacing: 1px; }
+.builder-header h2 { margin: 0; color: var(--accent-gold); font-size: 32px; letter-spacing: 1px; }
 .deck-counter-badge {
-    background: #333; padding: 6px 20px; border-radius: 20px;
-    font-weight: bold; font-size: 18px; color: white; border: 1px solid #555;
+    background: #333; padding: 10px 30px; border-radius: 25px;
+    font-weight: bold; font-size: 24px; color: white; border: 2px solid #555;
 }
 
 .builder-body { flex: 1; display: flex; overflow: hidden; position: relative; }
@@ -52,6 +52,7 @@ body {
 .card-pool .card {
     width: 220px;
     height: 300px;
+    overflow: visible;
 }
 .card-pool .card .card-cost {
     width: 36px; height: 36px;
@@ -78,55 +79,57 @@ body {
     width: 80px;
 }
 .card-pool .card .pool-count-badge {
-    font-size: 14px;
-    padding: 3px 14px;
+    font-size: 16px;
+    padding: 5px 18px;
+    bottom: -14px;
+    z-index: 200;
 }
 
-/* 우측: 덱 리스트 (사이드바) */
+/* 우측: 덱 리스트 (사이드바) - 150% 크기 */
 .my-deck-panel {
-    width: 340px; background: #10151b;
+    width: 510px; background: #10151b;
     border-left: 1px solid #333;
     display: flex; flex-direction: column;
     box-shadow: -5px 0 15px rgba(0,0,0,0.5);
 }
 .deck-list-scroll {
-    flex: 1; padding: 15px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 8px;
+    flex: 1; padding: 22px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
 }
 
-/* 덱 리스트 아이템 */
+/* 덱 리스트 아이템 - 150% 크기 */
 .deck-item {
     display: flex; align-items: center; justify-content: space-between;
     background: linear-gradient(90deg, #1c2e3f, #2b455f);
     border: 1px solid #3d5a75;
-    border-radius: 6px;
-    padding: 8px 12px; cursor: pointer;
+    border-radius: 9px;
+    padding: 12px 18px; cursor: pointer;
     transition: all 0.1s; position: relative;
 }
 .deck-item:hover { filter: brightness(1.2); border-color: #64b5f6; transform: translateX(-5px); }
 
-.deck-item-left { display: flex; align-items: center; gap: 12px; }
+.deck-item-left { display: flex; align-items: center; gap: 18px; }
 .list-cost {
-    width: 24px; height: 24px; background: #2980b9;
-    color: white; border-radius: 50%; border: 2px solid #8ecafc;
+    width: 36px; height: 36px; background: #2980b9;
+    color: white; border-radius: 50%; border: 3px solid #8ecafc;
     display: flex; justify-content: center; align-items: center;
-    font-weight: bold; font-size: 13px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    font-weight: bold; font-size: 18px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.5);
 }
-.list-name { font-size: 14px; font-weight: bold; color: #ecf0f1; text-shadow: 1px 1px 2px black; }
-.list-count { color: var(--accent-gold); font-weight: bold; font-size: 14px; }
+.list-name { font-size: 21px; font-weight: bold; color: #ecf0f1; text-shadow: 1px 1px 2px black; }
+.list-count { color: var(--accent-gold); font-weight: bold; font-size: 21px; }
 
 .builder-footer {
-    height: 80px; background: #1a1a1a;
+    height: 100px; background: #1a1a1a;
     display: flex; align-items: center; justify-content: center;
     border-top: 1px solid #333;
 }
 .start-btn {
-    padding: 14px 60px; font-size: 20px; font-weight: bold;
-    background: #27ae60; color: white; border: none; border-radius: 30px;
-    cursor: pointer; box-shadow: 0 4px 0 #1e8449; transition: transform 0.1s;
+    padding: 18px 80px; font-size: 26px; font-weight: bold;
+    background: #27ae60; color: white; border: none; border-radius: 35px;
+    cursor: pointer; box-shadow: 0 5px 0 #1e8449; transition: transform 0.1s;
 }
-.start-btn:active { transform: translateY(4px); box-shadow: none; }
+.start-btn:active { transform: translateY(5px); box-shadow: none; }
 .start-btn:disabled { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.5; }
 
 /* --- 3. 카드 디자인 --- */
@@ -202,8 +205,8 @@ body {
     position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
     background: #27ae60; color: white; border: 2px solid #1e8449;
     padding: 1px 10px; border-radius: 12px; font-size: 11px; font-weight: 900;
-    z-index: 100;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    z-index: 200;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.9);
     white-space: nowrap; pointer-events: none;
 }
 
@@ -222,17 +225,37 @@ body {
 
 .max-overlay-text {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    color: #fff; font-weight: bold; font-size: 11px; text-align: center;
+    color: #fff; font-weight: bold; font-size: 18px; text-align: center;
     width: 95%; z-index: 50;
-    text-shadow: 0 0 5px #000; line-height: 1.4;
+    text-shadow: 0 0 8px #000, 0 0 3px #000; line-height: 1.5;
     pointer-events: none; white-space: pre-wrap;
 }
 
 /* --- 게임 보드 UI --- */
 #game-board { flex: 1; display: flex; padding: 0; background: #0b0c10; position: relative; }
 
-.sidebar-left { width: 220px; background: rgba(0,0,0,0.3); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 10px; box-sizing: border-box; }
-#game-log { flex: 1; overflow-y: auto; font-size: 12px; color: #aaa; padding-right: 5px; }
+.sidebar-left {
+    width: 220px;
+    background: rgba(0,0,0,0.3);
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+    height: 100%;
+    max-height: 100vh;
+    overflow: hidden;
+}
+#game-log {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: 12px;
+    color: #aaa;
+    padding-right: 5px;
+    min-height: 0;
+    max-height: calc(100vh - 60px);
+}
 .log-entry { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; }
 
 .main-play-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; padding: 20px 40px; }
@@ -310,62 +333,62 @@ body {
 .modal-btn.primary { background: var(--accent-green); color: white; }
 .modal-btn.secondary { background: #555; color: white; }
 
-/* --- 덱 관리 UI --- */
+/* --- 덱 관리 UI - 150% 크기 --- */
 .deck-manager {
-    display: flex; gap: 10px; padding: 10px 15px;
+    display: flex; gap: 15px; padding: 15px 22px;
     background: #1a1a2e; border-bottom: 1px solid #333;
 }
 .deck-manager input {
-    flex: 1; padding: 8px 12px; border-radius: 6px;
-    border: 1px solid #444; background: #252540; color: white;
-    font-size: 14px;
+    flex: 1; padding: 12px 18px; border-radius: 9px;
+    border: 2px solid #444; background: #252540; color: white;
+    font-size: 18px;
 }
 .deck-manager input::placeholder { color: #666; }
 .deck-manager input:focus { outline: none; border-color: var(--accent-gold); }
 
 .deck-manager-btn {
-    padding: 8px 16px; border-radius: 6px; border: none;
-    font-weight: bold; font-size: 13px; cursor: pointer;
+    padding: 12px 24px; border-radius: 9px; border: none;
+    font-weight: bold; font-size: 18px; cursor: pointer;
     transition: all 0.1s;
 }
 .deck-manager-btn.save { background: #2980b9; color: white; }
 .deck-manager-btn.load { background: #27ae60; color: white; }
 .deck-manager-btn:hover { filter: brightness(1.2); }
 
-/* 저장된 덱 목록 */
+/* 저장된 덱 목록 - 150% 크기 */
 .saved-decks-list {
-    max-height: 200px; overflow-y: auto;
-    background: #151520; border-radius: 8px; margin-top: 10px;
+    max-height: 300px; overflow-y: auto;
+    background: #151520; border-radius: 12px; margin: 15px;
 }
 .saved-deck-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 15px; border-bottom: 1px solid #333; cursor: pointer;
+    padding: 15px 22px; border-bottom: 1px solid #333; cursor: pointer;
     transition: background 0.1s;
 }
 .saved-deck-item:hover { background: #252540; }
 .saved-deck-item:last-child { border-bottom: none; }
-.saved-deck-name { font-weight: bold; color: #ecf0f1; }
-.saved-deck-date { font-size: 12px; color: #666; }
+.saved-deck-name { font-weight: bold; color: #ecf0f1; font-size: 18px; }
+.saved-deck-date { font-size: 16px; color: #666; }
 .saved-deck-delete {
     background: #c0392b; color: white; border: none;
-    padding: 4px 10px; border-radius: 4px; font-size: 12px;
+    padding: 8px 16px; border-radius: 6px; font-size: 16px;
     cursor: pointer;
 }
 .saved-deck-delete:hover { background: #e74c3c; }
 
-/* --- 전적 표시 --- */
+/* --- 전적 표시 - 150% 크기 --- */
 .stats-display {
-    background: #252540; border-radius: 8px; padding: 12px;
-    margin-bottom: 10px; text-align: center;
+    background: #252540; border-radius: 12px; padding: 18px;
+    margin: 15px; text-align: center;
 }
-.stats-display h4 { margin: 0 0 8px 0; color: var(--accent-gold); font-size: 14px; }
+.stats-display h4 { margin: 0 0 12px 0; color: var(--accent-gold); font-size: 21px; }
 .stats-row { display: flex; justify-content: space-around; }
 .stat-item { text-align: center; }
-.stat-value { font-size: 20px; font-weight: bold; }
+.stat-value { font-size: 30px; font-weight: bold; }
 .stat-value.wins { color: #2ecc71; }
 .stat-value.losses { color: #e74c3c; }
 .stat-value.rate { color: var(--accent-gold); }
-.stat-label { font-size: 11px; color: #888; }
+.stat-label { font-size: 16px; color: #888; }
 
 /* ========================================
    애니메이션 & 드래그 피드백
