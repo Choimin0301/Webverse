@@ -152,7 +152,7 @@ body {
     overflow: hidden;
 }
 .card:hover { transform: scale(1.1); z-index: 500; border-color: #fff; }
-.card.in-hand:hover { transform: translateY(-60px) scale(1.4); z-index: 1000; }
+/* in-hand 호버는 hand-area에서 처리 */
 
 /* 카드 내부 레이아웃 */
 .card-art {
@@ -477,26 +477,76 @@ body {
 }
 
 /* 플레이어 손패 */
+/* 플레이어 손패 영역 */
 .hand-area {
-    height: 160px;
+    height: 180px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+    align-items: flex-end;
+    padding: 10px 20px 15px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
     border-top: 1px solid rgba(255,255,255,0.1);
     z-index: 100;
+    position: relative;
 }
 
+/* 손패 카드 기본 스타일 - 겹치기 효과 */
 .hand-area .card {
-    transition: transform 0.2s, margin 0.2s;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    margin: 0 -15px;
 }
 
+/* 카드 순서에 따른 z-index */
+.hand-area .card:nth-child(1) { z-index: 1; }
+.hand-area .card:nth-child(2) { z-index: 2; }
+.hand-area .card:nth-child(3) { z-index: 3; }
+.hand-area .card:nth-child(4) { z-index: 4; }
+.hand-area .card:nth-child(5) { z-index: 5; }
+.hand-area .card:nth-child(6) { z-index: 6; }
+.hand-area .card:nth-child(7) { z-index: 7; }
+.hand-area .card:nth-child(8) { z-index: 8; }
+.hand-area .card:nth-child(9) { z-index: 9; }
+
+/* 손패 카드 호버 효과 - 섀도우버스 스타일 */
 .hand-area .card:hover {
-    transform: translateY(-30px) scale(1.15);
-    z-index: 1000;
-    margin: 0 15px;
+    transform: translateY(-100px) scale(1.6);
+    z-index: 2000 !important;
+    margin: 0 20px;
+    box-shadow:
+        0 0 40px rgba(255, 215, 0, 0.9),
+        0 0 80px rgba(255, 215, 0, 0.5),
+        0 25px 50px rgba(0, 0, 0, 0.9);
+    border-color: #ffd700;
+    border-width: 3px;
+}
+
+/* 호버 시 다른 카드들 살짝 어둡게 & 아래로 */
+.hand-area:has(.card:hover) .card:not(:hover) {
+    filter: brightness(0.5);
+    transform: translateY(10px) scale(0.9);
+}
+
+/* 플레이 가능한 카드 강조 */
+.hand-area .card.playable {
+    border-color: #2ecc71;
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.7);
+    animation: playableGlow 2s ease-in-out infinite;
+}
+
+@keyframes playableGlow {
+    0%, 100% { box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(46, 204, 113, 0.9), 0 0 50px rgba(46, 204, 113, 0.4); }
+}
+
+.hand-area .card.playable:hover {
+    box-shadow:
+        0 0 40px rgba(46, 204, 113, 1),
+        0 0 80px rgba(46, 204, 113, 0.6),
+        0 25px 50px rgba(0, 0, 0, 0.9);
+    border-color: #2ecc71;
+    animation: none;
 }
 
 /* 우측 사이드바 - 크게, 중앙 정렬 */
