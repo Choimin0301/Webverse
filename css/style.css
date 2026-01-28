@@ -437,9 +437,9 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 15px;
     background: rgba(0,0,0,0.2);
-    margin: 10px 0;
+    margin: 5px 0;
     position: relative;
-    min-height: 280px;
+    min-height: 420px;
 }
 
 .field-divider {
@@ -456,19 +456,59 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
     padding: 15px;
-    min-height: 130px;
+    min-height: 200px;
+}
+
+/* 필드 카드 1.6배 크기 */
+.field-row .card {
+    width: 176px;
+    height: 240px;
+}
+
+.field-row .card .card-cost {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+}
+
+.field-row .card .card-name {
+    font-size: 13px;
+}
+
+.field-row .card .card-mid {
+    height: 26px;
+}
+
+.field-row .card .card-desc {
+    font-size: 11px;
+}
+
+.field-row .card .stat-box {
+    width: 40px;
+    height: 34px;
+    font-size: 18px;
+}
+
+.field-row .card .keyword-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+}
+
+.field-row .card .icon-row {
+    width: 70px;
 }
 
 .field-row.enemy-field {
     align-items: flex-end;
-    padding-bottom: 20px;
+    padding-bottom: 15px;
 }
 
 .field-row.player-field {
     align-items: flex-start;
-    padding-top: 20px;
+    padding-top: 15px;
 }
 
 .field-row.drag-hover {
