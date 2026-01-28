@@ -1296,3 +1296,504 @@ body {
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
 }
+
+/* ========================================
+   모바일 반응형 스타일
+   ======================================== */
+
+/* 태블릿 (1024px 이하) */
+@media screen and (max-width: 1024px) {
+    /* 리더 초상화 크기 축소 */
+    .portrait-image {
+        width: 200px;
+        height: 240px;
+    }
+
+    .leader-portrait.player-portrait {
+        left: 5px;
+        bottom: 160px;
+    }
+
+    .leader-portrait.enemy-portrait {
+        right: 160px;
+        top: 5px;
+    }
+
+    .portrait-hp {
+        padding: 8px 16px;
+        margin-top: -15px;
+    }
+
+    .hp-value {
+        font-size: 28px;
+    }
+
+    /* 사이드바 축소 */
+    .sidebar-left {
+        width: 140px;
+        padding: 8px;
+    }
+
+    .sidebar-right {
+        width: 160px;
+        padding: 15px 10px;
+    }
+
+    .pp-display {
+        width: 90px;
+        height: 90px;
+    }
+
+    .pp-value {
+        font-size: 32px;
+    }
+
+    .action-btn {
+        padding: 15px 10px;
+        font-size: 16px;
+    }
+
+    /* 필드 카드 크기 축소 */
+    .field-row .card {
+        width: 130px;
+        height: 180px;
+    }
+
+    .field-row .card .card-cost {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+    }
+
+    .field-row .card .stat-box {
+        width: 32px;
+        height: 28px;
+        font-size: 14px;
+    }
+}
+
+/* 모바일 가로 (768px 이하) */
+@media screen and (max-width: 768px) {
+    /* 덱빌더 화면 */
+    .builder-header {
+        height: 60px;
+        padding: 0 15px;
+    }
+
+    .builder-header h2 {
+        font-size: 20px;
+    }
+
+    .deck-counter-badge {
+        font-size: 16px;
+        padding: 6px 15px;
+    }
+
+    .builder-body {
+        flex-direction: column;
+    }
+
+    .card-pool {
+        padding: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .card-pool .card {
+        width: 90px;
+        height: 130px;
+    }
+
+    .card-pool .card .card-cost {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    .card-pool .card .card-name {
+        font-size: 9px;
+    }
+
+    .card-pool .card .stat-box {
+        width: 24px;
+        height: 22px;
+        font-size: 11px;
+    }
+
+    .card-pool .card .pool-count-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+
+    .my-deck-panel {
+        width: 100%;
+        max-height: 40vh;
+    }
+
+    .deck-list-scroll {
+        padding: 10px;
+        gap: 6px;
+    }
+
+    .deck-item {
+        padding: 8px 12px;
+    }
+
+    .list-cost {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .list-name {
+        font-size: 14px;
+    }
+
+    .builder-footer {
+        height: 70px;
+    }
+
+    .start-btn {
+        padding: 12px 40px;
+        font-size: 18px;
+    }
+
+    /* 게임 보드 - 세로 레이아웃 */
+    #game-board {
+        flex-direction: column;
+    }
+
+    .sidebar-left {
+        display: none; /* 모바일에서 로그 숨김 */
+    }
+
+    .sidebar-right {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 10px;
+        background: rgba(0,0,0,0.9);
+        border-top: 2px solid #444;
+        z-index: 1000;
+    }
+
+    .pp-display {
+        width: 60px;
+        height: 60px;
+    }
+
+    .pp-label {
+        font-size: 10px;
+    }
+
+    .pp-value {
+        font-size: 22px;
+    }
+
+    .pp-max {
+        font-size: 12px;
+    }
+
+    .action-btn {
+        width: auto;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    /* 메인 영역 */
+    .main-play-area {
+        padding: 5px 10px;
+        padding-bottom: 80px; /* 하단 UI 공간 */
+    }
+
+    /* 리더 초상화 모바일 */
+    .leader-portrait.player-portrait {
+        left: 5px;
+        bottom: 90px;
+    }
+
+    .leader-portrait.enemy-portrait {
+        right: 5px;
+        top: 5px;
+    }
+
+    .portrait-image {
+        width: 100px;
+        height: 120px;
+    }
+
+    .portrait-hp {
+        padding: 4px 10px;
+        margin-top: -10px;
+        border-width: 2px;
+    }
+
+    .hp-icon {
+        font-size: 14px;
+    }
+
+    .hp-value {
+        font-size: 18px;
+        min-width: 25px;
+    }
+
+    .portrait-ep {
+        gap: 3px;
+        margin-top: 5px;
+    }
+
+    .portrait-ep .orb {
+        width: 14px;
+        height: 14px;
+        border-width: 2px;
+    }
+
+    /* 배틀 필드 */
+    .battle-field {
+        min-height: 300px;
+        margin: 5px 0;
+    }
+
+    .field-row {
+        min-height: 120px;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .field-row .card {
+        width: 70px;
+        height: 100px;
+    }
+
+    .field-row .card .card-cost {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+
+    .field-row .card .card-name {
+        font-size: 8px;
+    }
+
+    .field-row .card .card-mid {
+        height: 16px;
+    }
+
+    .field-row .card .stat-box {
+        width: 22px;
+        height: 20px;
+        font-size: 10px;
+    }
+
+    .field-row .card .keyword-icon {
+        width: 12px;
+        height: 12px;
+        font-size: 8px;
+    }
+
+    /* 손패 */
+    .hand-area {
+        height: 120px;
+        padding: 5px 10px 10px;
+    }
+
+    .hand-area .card {
+        width: 70px;
+        height: 100px;
+        margin: 0 -10px;
+    }
+
+    .hand-area .card:hover {
+        transform: translateY(-50px) scale(1.4);
+        margin: 0 10px;
+    }
+
+    /* 적 손패 */
+    .enemy-hand-mini {
+        padding: 5px;
+    }
+
+    .enemy-hand-mini .card {
+        width: 30px;
+        height: 42px;
+    }
+}
+
+/* 모바일 세로 (480px 이하) */
+@media screen and (max-width: 480px) {
+    /* 덱빌더 */
+    .card-pool {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .card-pool .card {
+        width: 100%;
+        height: 120px;
+    }
+
+    .deck-manager {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .deck-manager input {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .deck-manager-btn {
+        flex: 1;
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    /* 게임 */
+    .portrait-image {
+        width: 80px;
+        height: 96px;
+    }
+
+    .portrait-hp {
+        padding: 3px 8px;
+    }
+
+    .hp-value {
+        font-size: 16px;
+    }
+
+    .field-row .card {
+        width: 55px;
+        height: 80px;
+    }
+
+    .field-row .card .card-cost {
+        width: 14px;
+        height: 14px;
+        font-size: 8px;
+    }
+
+    .field-row .card .stat-box {
+        width: 18px;
+        height: 16px;
+        font-size: 8px;
+    }
+
+    .hand-area {
+        height: 100px;
+    }
+
+    .hand-area .card {
+        width: 55px;
+        height: 80px;
+        margin: 0 -8px;
+    }
+
+    .action-btn {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    .pp-display {
+        width: 50px;
+        height: 50px;
+    }
+
+    .pp-value {
+        font-size: 18px;
+    }
+}
+
+/* 터치 옵션 UI */
+.touch-options-ui {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    background: rgba(0,0,0,0.9);
+    padding: 15px 20px;
+    border-radius: 15px;
+    border: 2px solid var(--accent-gold);
+    z-index: 10000;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.8);
+}
+
+.touch-option-btn {
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(180deg, #3498db, #2980b9);
+    color: white;
+    min-width: 100px;
+    transition: all 0.2s;
+}
+
+.touch-option-btn:active {
+    transform: scale(0.95);
+}
+
+.touch-option-btn.disabled {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.mobile-device .hand-area .card {
+    cursor: pointer;
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+    /* 호버 효과 비활성화 */
+    .card:hover {
+        transform: none;
+    }
+
+    .hand-area .card:hover {
+        transform: none;
+        margin: 0 -10px;
+        box-shadow: none;
+        border-color: inherit;
+    }
+
+    .hand-area:has(.card:hover) .card:not(:hover) {
+        filter: none;
+        transform: none;
+    }
+
+    /* 터치 선택 스타일 */
+    .card.touch-selected {
+        transform: translateY(-60px) scale(1.5);
+        z-index: 2000;
+        margin: 0 15px;
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.9);
+        border-color: #ffd700;
+    }
+
+    .card.touch-target {
+        box-shadow: 0 0 20px #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    /* 버튼 터치 영역 확대 */
+    .action-btn {
+        min-height: 48px;
+    }
+
+    .deck-manager-btn {
+        min-height: 44px;
+    }
+}

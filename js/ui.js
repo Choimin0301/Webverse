@@ -302,6 +302,10 @@ function renderHand(list, id, isP) {
             let cost = c.enhance && pMana >= c.enhance.cost ? c.enhance.cost : c.cost;
             if (pMana >= cost && isPlayerTurn) d.classList.add('playable');
             setupDragEvents(d, 'hand', i);
+            // 모바일 터치 이벤트
+            if (typeof setupTouchEvents === 'function') {
+                setupTouchEvents(d, 'hand', i);
+            }
         }
         el.appendChild(d);
     });
@@ -326,6 +330,10 @@ function renderField(list, id, isP) {
             else if (c.canAttack && isPlayerTurn && !isEvolveMode) {
                 d.classList.add('can-attack');
                 setupDragEvents(d, 'field', i);
+                // 모바일 터치 이벤트
+                if (typeof setupTouchEvents === 'function') {
+                    setupTouchEvents(d, 'field', i);
+                }
             }
             else d.classList.add('exhausted');
         } else {
