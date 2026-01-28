@@ -307,6 +307,108 @@ body {
     color: var(--accent-gold);
 }
 
+/* 리더 초상화 (좌측 하단 / 우측 상단) */
+.leader-portrait {
+    position: absolute;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.leader-portrait.player-portrait {
+    left: 10px;
+    bottom: 180px;
+}
+
+.leader-portrait.enemy-portrait {
+    right: 210px;
+    top: 10px;
+}
+
+.portrait-image {
+    width: 350px;
+    height: 420px;
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 5px 25px rgba(0,0,0,0.8));
+}
+
+.player-portrait .portrait-image {
+    border-bottom: 3px solid #3498db;
+}
+
+.enemy-portrait .portrait-image {
+    border-bottom: 3px solid #c0392b;
+}
+
+.portrait-hp {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+    border: 4px solid #c0392b;
+    border-radius: 30px;
+    padding: 12px 30px;
+    margin-top: -25px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+}
+
+.hp-icon {
+    font-size: 28px;
+}
+
+.hp-value {
+    font-size: 38px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+    min-width: 50px;
+    text-align: center;
+}
+
+.portrait-ep {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.portrait-ep .orb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #333;
+    border: 3px solid #555;
+    transition: all 0.3s;
+}
+
+.portrait-ep .orb.on {
+    background: radial-gradient(circle, #f1c40f, #e67e22);
+    border-color: #fff;
+    box-shadow: 0 0 15px #f1c40f;
+}
+
+/* 적 리더 공격 가능 상태 */
+.leader-portrait.enemy-portrait.valid-target {
+    cursor: crosshair;
+}
+
+.leader-portrait.enemy-portrait.valid-target .portrait-image {
+    animation: portraitTargetPulse 0.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px #e74c3c) drop-shadow(0 5px 15px rgba(0,0,0,0.8));
+}
+
+.leader-portrait.enemy-portrait.valid-target .portrait-hp {
+    border-color: #e74c3c;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+}
+
+@keyframes portraitTargetPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
 /* 중앙 메인 영역 */
 .main-play-area {
     flex: 1;
@@ -418,14 +520,14 @@ body {
 /* 적 손패 (미니) */
 .enemy-hand-mini {
     display: flex;
+    justify-content: center;
     gap: 5px;
-    margin-left: 30px;
+    padding: 10px;
 }
 
 .enemy-hand-mini .card {
-    width: 40px;
-    height: 55px;
-    transform: scale(0.9);
+    width: 50px;
+    height: 70px;
 }
 
 /* 배틀 필드 */
