@@ -273,10 +273,11 @@ function renderCardInner(c, hide) {
     let activeEnhance = !hide && isPlayerTurn && c.enhance && pMana >= c.enhance.cost && !c.summonTurn;
     let displayCost = activeEnhance ? c.enhance.cost : c.cost;
 
+    const artUrl = getCardArt(c.id);
     return `
         <div class="card-cost ${activeEnhance ? 'enhance-cost' : ''}">${displayCost}</div>
         <div class="icon-row">${badges}</div>
-        <div class="card-art" style="background-image:url('${c.art}')"></div>
+        <div class="card-art" style="background-image:url('${artUrl}')"></div>
         <div class="card-mid"><div class="card-name">${c.name}</div></div>
         <div class="card-bottom">
             <div class="card-desc">${c.desc || ''}</div>
