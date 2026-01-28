@@ -799,6 +799,7 @@ body {
 }
 .deck-manager-btn.save { background: #2980b9; color: white; }
 .deck-manager-btn.load { background: #27ae60; color: white; }
+.deck-manager-btn.reset { background: #c0392b; color: white; }
 .deck-manager-btn:hover { filter: brightness(1.2); }
 
 /* 저장된 덱 목록 - 150% 크기 */

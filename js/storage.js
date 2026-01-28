@@ -153,3 +153,22 @@ function getWinRate() {
     if (stats.totalGames === 0) return 0;
     return Math.round((stats.wins / stats.totalGames) * 100);
 }
+
+/**
+ * 모든 저장 데이터 초기화
+ */
+function resetAllData() {
+    if (confirm('모든 저장 데이터(덱, 전적)를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        localStorage.removeItem(STORAGE_KEYS.DECKS);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_DECK);
+        localStorage.removeItem(STORAGE_KEYS.STATS);
+
+        // 덱 리스트 초기화 후 기본 덱으로
+        myDeckList = [];
+        initBuilder();
+        updateStatsDisplay();
+        renderSavedDecksList();
+
+        alert('모든 데이터가 초기화되었습니다.');
+    }
+}
