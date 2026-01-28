@@ -64,40 +64,60 @@
 </div>
 
 <!-- 게임 보드 -->
-<div id="game-board" style="display:flex;">
+<div id="game-board">
+    <!-- 좌측 사이드바: 배틀로그 + 덱 카운터 -->
     <div class="sidebar-left">
-        <div style="color:#888; font-weight:bold; margin-bottom:10px;">Battle Log</div>
+        <div class="log-header">Battle Log</div>
         <div id="game-log"></div>
+        <div class="deck-counter">
+            <div class="deck-icon">🃏</div>
+            <span id="deck-count">40</span>
+        </div>
     </div>
 
+    <!-- 중앙 메인 영역 -->
     <div class="main-play-area">
-        <div class="hand-row" id="enemy-hand"></div>
-
-        <div class="battle-zone-container">
-            <div class="hero-spot enemy">
-                <div id="enemy-hero" class="hero-avatar enemy">Enemy</div>
-                <div class="hp-pill" id="e-hp">20</div>
-                <div class="ep-dots" id="e-ep"></div>
+        <!-- 적 리더 -->
+        <div class="leader-area enemy">
+            <div class="leader-info">
+                <div id="enemy-hero" class="hero-avatar enemy">
+                    <div class="hp-display" id="e-hp">20</div>
+                </div>
+                <div class="ep-container" id="e-ep"></div>
             </div>
+            <div class="enemy-hand-mini" id="enemy-hand"></div>
+        </div>
 
-            <div class="field-row" id="enemy-field"></div>
-            <div class="battle-divider"></div>
-            <div class="field-row" id="player-field"></div>
+        <!-- 배틀 필드 -->
+        <div class="battle-field">
+            <div class="field-row enemy-field" id="enemy-field"></div>
+            <div class="field-divider"></div>
+            <div class="field-row player-field" id="player-field"></div>
+        </div>
 
-            <div class="hero-spot player">
-                <div id="player-hero" class="hero-avatar player">You</div>
-                <div class="hp-pill" id="p-hp">20</div>
-                <div class="ep-dots" id="p-ep"></div>
+        <!-- 플레이어 리더 -->
+        <div class="leader-area player">
+            <div class="leader-info">
+                <div id="player-hero" class="hero-avatar player">
+                    <div class="hp-display" id="p-hp">20</div>
+                </div>
+                <div class="ep-container" id="p-ep"></div>
             </div>
         </div>
 
-        <div class="hand-row" id="player-hand"></div>
+        <!-- 플레이어 손패 -->
+        <div class="hand-area" id="player-hand"></div>
     </div>
 
+    <!-- 우측 사이드바: 턴종료 + PP -->
     <div class="sidebar-right">
-        <div class="mana-gem">💎 <span id="mana">0/0</span></div>
-        <button id="btn-evolve" class="action-btn" onclick="toggleEvolve()">⚡ 진화</button>
-        <button id="btn-end" class="action-btn" onclick="endTurn()">턴 종료</button>
+        <div class="pp-display">
+            <div class="pp-label">PP</div>
+            <div class="pp-value"><span id="mana-current">0</span></div>
+            <div class="pp-max"><span id="mana-max">0</span></div>
+        </div>
+        <button id="btn-end" class="action-btn end-turn" onclick="endTurn()">턴 종료</button>
+        <button id="btn-evolve" class="action-btn evolve" onclick="toggleEvolve()">진화</button>
     </div>
 </div>
 

@@ -166,12 +166,23 @@ function clearHighlights() {
  * 화면 업데이트
  */
 function updateView() {
-    document.getElementById('mana').innerText = `${pMana}/${pMaxMana}`;
+    // PP (마나) 표시 업데이트
+    document.getElementById('mana-current').innerText = pMana;
+    document.getElementById('mana-max').innerText = pMaxMana;
+
+    // HP 표시 업데이트
     document.getElementById('p-hp').innerText = pHP;
     document.getElementById('e-hp').innerText = eHP;
+
+    // EP 오브 렌더링
     renderOrbs('p-ep', pEP, isFirst ? 2 : 3);
     renderOrbs('e-ep', eEP, isFirst ? 3 : 2);
 
+    // 덱 카운트 업데이트
+    const deckCountEl = document.getElementById('deck-count');
+    if (deckCountEl) deckCountEl.innerText = pDeck.length;
+
+    // 버튼 상태 업데이트
     const evBtn = document.getElementById('btn-evolve');
     evBtn.classList.toggle('active', isEvolveMode);
 
@@ -179,13 +190,55 @@ function updateView() {
     endBtn.disabled = !isPlayerTurn;
 
     const unlock = isFirst ? 5 : 4;
-    if (isPlayerTurn && myTurnCount >= unlock && pEP > 0 && !evolvedThisTurn) evBtn.disabled = false;
-    else evBtn.disabled = true;
+    const canEvolve = isPlayerTurn && myTurnCount >= unlock && pEP > 0 && !evolvedThisTurn;
+    evBtn.disabled = !canEvolve;
 
+    // 유도 애니메이션 처리
+    updateButtonSuggestions(endBtn, evBtn, canEvolve);
+
+    // 카드 렌더링
     renderHand(pHand, 'player-hand', true);
     renderHand(eHand, 'enemy-hand', false);
     renderField(pField, 'player-field', true);
     renderField(eField, 'enemy-field', false);
+}
+
+/**
+ * 버튼 유도 애니메이션 업데이트
+ */
+function updateButtonSuggestions(endBtn, evBtn, canEvolve) {
+    // 기본적으로 suggest 클래스 제거
+    endBtn.classList.remove('suggest');
+    evBtn.classList.remove('suggest');
+
+    if (!isPlayerTurn) return;
+
+    // 플레이 가능한 카드 확인
+    const hasPlayableCard = pHand.some(card => {
+        let cost = card.enhance && pMana >= card.enhance.cost ? card.enhance.cost : card.cost;
+        return pMana >= cost && pField.length < 5;
+    });
+
+    // 공격 가능한 카드 확인
+    const hasAttackableCard = pField.some(card => card.canAttack);
+
+    // 진화 가능한 카드 확인
+    const hasEvolvableCard = pField.some(card => !card.evolved);
+
+    // 진화 유도: 진화 가능 턴이고, 진화 안 했고, 진화 가능한 몬스터가 있을 때
+    if (canEvolve && hasEvolvableCard && !isEvolveMode) {
+        evBtn.classList.add('suggest');
+    }
+
+    // 턴 종료 유도: 플레이 가능한 카드 없고, 공격 가능한 카드도 없을 때
+    // (단, 진화 가능하면 진화를 먼저 유도)
+    if (!hasPlayableCard && !hasAttackableCard) {
+        if (canEvolve && hasEvolvableCard) {
+            // 진화 유도가 우선
+        } else {
+            endBtn.classList.add('suggest');
+        }
+    }
 }
 
 /**
