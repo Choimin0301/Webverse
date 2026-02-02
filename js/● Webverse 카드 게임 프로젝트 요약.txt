@@ -1,0 +1,80 @@
+● Webverse 카드 게임 프로젝트 요약
+
+  프로젝트 개요
+
+  - 경로: C:\Users\min\Webverse
+  - 내용: Shadowverse 스타일 카드 게임 시뮬레이터 (바닐라 JS, HTML/CSS)
+  - 카드 테마: 물고기/해산물 이름 (fish_list_py.json 참조)
+
+  파일 구조
+
+  Webverse/
+  ├── index.html          # 메인 HTML (덱빌더, 게임보드, 모달)
+  ├── css/style.css       # 전체 스타일 + 모바일 반응형 (미디어쿼리 1024/768/480px)
+  ├── js/
+  │   ├── cards.js        # 카드 DB (현재 91장 + 토큰1장 = 총 92엔트리)
+  │   ├── storage.js      # localStorage 저장/불러오기, resetAllData()
+  │   ├── animations.js   # 공격/피해/진화 애니메이션
+  │   ├── game.js         # 게임 로직 (턴, 마나, 공격, 진화 등)
+  │   ├── ai.js           # AI 로직
+  │   ├── ui.js           # UI 렌더링, 드래그앤드롭, 모달, 전적표시
+  │   ├── deck-builder.js # 덱 빌더 (DEFAULT_DECK 설정, 최소 30장/최대 40장)
+  │   └── mobile.js       # 모바일 터치 이벤트 지원
+  ├── images/cards/       # {id}.png 카드 이미지
+  ├── images/leaders/     # player.png, enemy.png 리더 초상화
+  └── js/fish_list_py.json # 물고기 이름 목록 (1~90)
+
+  완료된 작업 내역
+
+  구조/기능
+
+  - 단일 HTML → 멀티파일 분리
+  - localStorage 덱 저장/불러오기/삭제, 전적 저장
+  - 데이터 초기화 버튼 (resetAllData)
+  - DEFAULT_DECK 객체로 기본 덱 커스터마이즈 가능
+
+  UI/UX
+
+  - Shadowverse 스타일 배틀 화면 레이아웃
+  - 좌측: 배틀로그 + 덱카운터 / 우측: PP표시 + 턴종료/진화 버튼
+  - 손패 카드 호버 시 확대 + 금색 빛 + 나머지 카드 어두워짐
+  - 필드 카드 1.6배 확대
+  - 리더 초상화 (좌하단: 플레이어, 우상단: 적) + HP/EP 표시
+  - 턴종료/진화 버튼 유도 애니메이션 (suggest 클래스)
+  - 카드 이미지 지원 (images/cards/{id}.png)
+
+  드래그 & 공격
+
+  - 손패→필드 드래그로 카드 플레이
+  - 필드 카드 드래그로 적 유닛/리더 공격
+  - 커스텀 드래그 고스트 (투명 기본 이미지 + 고스트 엘리먼트)
+  - 공격선 표시 (drawAttackLineToPoint)
+
+  모바일 지원
+
+  - viewport 메타태그, PWA 메타태그
+  - CSS 미디어쿼리 반응형 (1024px/768px/480px)
+  - mobile.js: 터치 감지, 터치 선택/해제, 공격 타겟 하이라이트
+  - ui.js의 renderHand/renderField에서 setupTouchEvents() 연결 완료
+  - 터치 옵션 UI (카드 내기/취소, 대상 선택)
+
+  카드 데이터
+
+  - 총 91장 (id 1~91) + 토큰(id 99)
+  - 물고기/해산물 이름 (fish_list_py.json 기반)
+  - 키워드: storm, rush, ward, bane, ambush, drain, barrier, aura, intimidate
+  - 능력: fanfare, lastWords, strike, clash, evolve, enhance
+  - id 91은 "낚시꾼" (원래 꼬막 중복 수정됨)
+
+  주요 버그 수정 이력
+
+  - 드래그 공격 미작동 → setupHeroAttackTarget 분리 + heroEventInitialized 플래그
+  - 드래그 시 카드 2장 표시 → 1x1 투명 이미지로 기본 드래그 이미지 대체
+  - 드래그 공격 1회만 작동 → hasAttacked 플래그 로직 수정
+  - 배틀로그 화면 밀림 → overflow/height 제약 추가
+
+  현재 상태
+
+  - 모든 기능 구현 완료, 정상 작동 상태
+  - 카드 이미지는 images/cards/{id}.png에 직접 넣으면 자동 적용
+  - 리더 이미지는 images/leaders/player.png, enemy.png
